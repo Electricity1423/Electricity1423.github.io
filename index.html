@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Sorting algorithm visualizer</title>
+    <title>Sound Sorting Visualizer</title>
     <style>
-        body { font-family: sans-serif; background: #121212; color: #fff; text-align: center; margin: 10px; }
+        body { font-family: sans-serif; background: #000; color: #fff; text-align: center; margin: 10px; }
         .controls { background: #1e1e1e; padding: 12px; border-radius: 8px; margin-bottom: 10px; display: inline-flex; flex-wrap: wrap; gap: 15px; justify-content: center; align-items: center; max-width: 95vw; }
         .stats { background: #1e1e1e; padding: 8px 20px; border-radius: 8px; margin-bottom: 15px; display: inline-flex; gap: 25px; font-weight: bold; font-size: 15px; color: #00adb5; }
         .stat-val { color: #fff; }
@@ -13,28 +13,29 @@
         input[type="range"] { accent-color: #00adb5; vertical-align: middle; }
         label { font-size: 13px; color: #ccc; }
         .val-display { display: inline-block; min-width: 35px; text-align: left; margin-left: 3px; color: #00adb5; font-weight: bold; }
-        canvas { background: #1a1a1a; border-radius: 8px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        canvas { background: #000; border-radius: 8px; box-shadow: 0 0 20px rgba(0,0,0,0.8); }
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
-    <h1>Sorting Algorithm Visualizer</h1>
+    <h1>Sound Sorting Visualizer</h1>
     <div class="controls">
         <button id="shf">Shuffle</button>
         <button id="srt">Sort</button>
         <button id="pse" disabled>Pause</button>
         <select id="alg">
             <option value="b">Bubble</option><option value="q">Quick</option><option value="i">Insertion</option>
+            <option value="s">Selection</option>
             <option value="m">Merge</option><option value="h">Heap</option><option value="oe">Odd-Even</option>
             <option value="r">Radix</option><option value="g">Gravity (Bead)</option><option value="bg">Bogo</option>
             <option value="st">Stalin</option>
         </select>
         <select id="varSelect"></select>
         <select id="md">
-            <option value="cc">Color Circle</option><option value="cl">Columns</option>
+            <option value="cl">Columns</option><option value="cc">Color Circle</option>
             <option value="dt">Dots</option><option value="dc">Disparity Circle</option>
         </select>
-        <select id="clr"><option value="color">Color Mode</option><option value="white">No Color Mode (White)</option></select>
+        <select id="clr"><option value="white">No Color Mode (White)</option><option value="color">Color Mode</option></select>
         <select id="snd">
             <option value="w0rthy">w0rthy Authentic</option><option value="sine">Pure Sine</option>
             <option value="square">Square Wave</option><option value="sawtooth">Sawtooth</option>
@@ -65,7 +66,9 @@
 
         const variants = {
             b: [{v:"std",n:"Standard"}, {v:"cocktail",n:"Cocktail Shaker"}], q: [{v:"std",n:"Single-Pivot"}, {v:"dual",n:"Dual-Pivot"}],
-            i: [{v:"std",n:"Standard"}, {v:"shell",n:"Shell Sort"}], m: [{v:"out",n:"Out of Place"}, {v:"iter",n:"Bottom-Up"}, {v:"inplace",n:"In-Place"}, {v:"weave",n:"Weave Merge"}],
+            i: [{v:"std",n:"Standard"}, {v:"shell",n:"Shell Sort"}],
+            s: [{v:"std",n:"Standard"}, {v:"double",n:"Double Selection"}],
+            m: [{v:"out",n:"Out of Place"}, {v:"iter",n:"Bottom-Up"}, {v:"inplace",n:"In-Place"}, {v:"weave",n:"Weave Merge"}],
             h: [{v:"max",n:"Max Heap Sort"}], oe: [{v:"std",n:"Odd-Even Brick"}], r: [{v:"lsd",n:"Radix LSD"}, {v:"msd",n:"Radix MSD"}],
             g: [{v:"std",n:"Standard Bead"}], bg: [{v:"std",n:"Standard"}, {v:"imp",n:"Improvised"}],
             st: [{v:"std",n:"Purge All (Strict)"}, {v:"selective",n:"Selective Purge (50%)"}, {v:"gulag",n:"Send to Back (Exile)"}]
@@ -119,7 +122,22 @@
         }
 
         const getDelay = () => parseFloat(spd.value), upStats = () => { compCount.textContent = totalComps; swapCount.textContent = totalSwaps; };
-        const col = (v, i) => statusMode === "fw" ? '#fff' : (statusMode === "vf" ? (i === verifiedIdx ? '#00ff00' : '#fff') : (statusMode === "dn" ? (clr.value === 'white' ? '#fff' : `hsl(${(v/parseInt(sz.value))*360},100%,50%)`) : (active.includes(i) ? (statusMode === "sw" ? '#fff' : '#ffff00') : (clr.value === 'white' ? '#fff' : `hsl(${(v/parseInt(sz.value))*360},100%,50%)`))));
+        
+        const col = (v, i) => {
+            if (statusMode === "vf") {
+                if (i <= verifiedIdx) return '#00ff00';
+                return clr.value === 'white' ? '#ffffff' : `hsl(${(v/parseInt(sz.value))*360},100%,50%)`;
+            }
+            if (statusMode === "fw") return '#ffffff';
+            if (statusMode === "dn") return clr.value === 'white' ? '#ffffff' : `hsl(${(v/parseInt(sz.value))*360},100%,50%)`;
+            
+            if (active.includes(i)) {
+                if (statusMode === "sw") return '#ffffff';
+                return '#ff0000';
+            }
+            
+            return clr.value === 'white' ? '#ffffff' : `hsl(${(v/parseInt(sz.value))*360},100%,50%)`;
+        };
 
         shf.addEventListener('click', async () => {
             if (isSrt) { stopSrt = true; isPaused = false; pse.textContent = "Pause"; pse.disabled = true; return; }
@@ -243,10 +261,25 @@
             if (a === 'b') { if (v === 'std') await bubble(); else await cocktail(); }
             else if (a === 'q') { if (v === 'std') await quick(); else await dualQuick(); }
             else if (a === 'i') { if (v === 'std') await insert(0, arr.length - 1); else await shell(); }
+            else if (a === 's') { if (v === 'std') await selection(); else await doubleSelection(); }
             else if (a === 'm') { if (v === 'out') await mergeOut(); else if (v === 'iter') await mergeIter(); else if (v === 'inplace') await mergeInP(); else await mergeWeave(); }
             else if (a === 'h') await heap(); else if (a === 'oe') await oddEven(); else if (a === 'r') { if (v === 'lsd') await radixLSD(); else await radixMSD(); } else if (a === 'g') await gravity(); else if (a === 'bg') { if (v === 'std') await bogo(); else await bogoImprovised(); }
             else if (a === 'st') { if (v === 'std') await stalin(); else if (v === 'selective') await stalinSelective(); else await stalinGulag(); }
-            if (!stopSrt) { statusMode = "fw"; active = []; rndr(); upStats(); await new Promise(r => setTimeout(r, 200)); statusMode = "vf"; const sweep = Math.max(2, Math.min(30, 1200 / arr.length)); for (let i = 0; i < arr.length; i++) { if (stopSrt) break; verifiedIdx = i; active = [i]; if (performance.now() - lastRenderTime > 16 || sweep >= 10) rndr(); playTone(arr[i]); await new Promise(r => setTimeout(r, sweep)); } statusMode = "done"; }
+            
+            if (!stopSrt) { 
+                statusMode = "vf"; 
+                const totalDuration = 1000;
+                const delayPerItem = Math.max(1, totalDuration / arr.length);
+                for (let i = 0; i < arr.length; i++) { 
+                    if (stopSrt) break; 
+                    verifiedIdx = i; 
+                    active = [i]; 
+                    if (performance.now() - lastRenderTime > 16 || delayPerItem >= 10) rndr(); 
+                    playTone(arr[i]); 
+                    await new Promise(r => setTimeout(r, delayPerItem)); 
+                } 
+                statusMode = "done"; 
+            }
             isSrt = stopSrt = isPaused = false; pse.textContent = "Pause"; active = []; verifiedIdx = -1; rndr(); upStats(); toggleUI(false);
         });
 
@@ -255,6 +288,47 @@
         async function insert(l, h) { for (let i = l + 1; i <= h; i++) { let k = arr[i], j = i - 1; while (j >= l) { if (stopSrt) return; await tC(j, j+1); if (arr[j] > k) { arr[j+1] = arr[j]; await tS(j, j+1); j--; } else break; } arr[j+1] = k; } }
         async function shell() { for (let g = Math.floor(arr.length/2); g > 0; g = Math.floor(g/2)) { for (let i = g; i < arr.length; i++) { let t = arr[i], j = i; while (j >= g) { if (stopSrt) return; await tC(j - g, j); if (arr[j - g] > t) { arr[j] = arr[j - g]; await tS(j - g, j); j -= g; } else break; } arr[j] = t; } } }
         
+        async function selection() {
+            let n = arr.length;
+            for (let i = 0; i < n - 1; i++) {
+                let minIdx = i;
+                for (let j = i + 1; j < n; j++) {
+                    if (stopSrt) return;
+                    await tC(minIdx, j);
+                    if (arr[j] < arr[minIdx]) minIdx = j;
+                }
+                if (minIdx !== i) {
+                    [arr[i], arr[minIdx]] = [arr[minIdx], arr[i]];
+                    await tS(i, minIdx);
+                }
+            }
+        }
+
+        async function doubleSelection() {
+            let l = 0, r = arr.length - 1;
+            while (l < r) {
+                let minIdx = l, maxIdx = l;
+                for (let i = l + 1; i <= r; i++) {
+                    if (stopSrt) return;
+                    await tC(minIdx, i);
+                    if (arr[i] < arr[minIdx]) minIdx = i;
+                    await tC(maxIdx, i);
+                    if (arr[i] > arr[maxIdx]) maxIdx = i;
+                }
+                if (minIdx !== l) {
+                    [arr[l], arr[minIdx]] = [arr[minIdx], arr[l]];
+                    await tS(l, minIdx);
+                    if (maxIdx === l) maxIdx = minIdx;
+                }
+                if (maxIdx !== r) {
+                    [arr[r], arr[maxIdx]] = [arr[maxIdx], arr[r]];
+                    await tS(r, maxIdx);
+                }
+                l++;
+                r--;
+            }
+        }
+
         async function quick() {
             let stack = [0, arr.length - 1];
             while (stack.length > 0) {
