@@ -2,25 +2,158 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Ultimate Sound Sorting Visualizer - Expanded Master Edition</title>
+    <title>Ultimate Sound Sorting Visualizer - Unlimited Grid Edition</title>
     <style>
         * { box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #0b0e14; color: #e6edf3; text-align: center; margin: 0; padding: 15px; }
-        h1 { margin: 5px 0 15px 0; font-size: 22px; color: #58a6ff; font-weight: 600; letter-spacing: 0.5px; }
-        .controls { background: #161b22; padding: 12px; border-radius: 8px; border: 1px solid #30363d; margin-bottom: 12px; display: inline-flex; flex-wrap: wrap; gap: 10px; justify-content: center; align-items: center; max-width: 98vw; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
-        .stats { background: #161b22; padding: 8px 20px; border-radius: 8px; border: 1px solid #30363d; margin-bottom: 12px; display: inline-flex; gap: 20px; font-weight: 600; font-size: 14px; color: #58a6ff; }
-        .stat-val { color: #f0f6fc; font-family: monospace; font-size: 15px; }
-        button, select { background: #21262d; color: #c9d1d9; border: 1px solid #363b42; padding: 6px 12px; font-weight: 600; font-size: 13px; border-radius: 6px; cursor: pointer; transition: 0.15s ease; }
+        html, body {
+            width: 100vw;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            background: #0b0e14; 
+            color: #e6edf3; 
+        }
+        body { 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 8px;
+        }
+        h1 { margin: 2px 0 6px 0; font-size: 18px; color: #58a6ff; font-weight: 600; letter-spacing: 0.5px; }
+        .controls { 
+            background: #161b22; 
+            padding: 6px 10px; 
+            border-radius: 8px; 
+            border: 1px solid #30363d; 
+            margin-bottom: 6px; 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 6px 10px; 
+            justify-content: center; 
+            align-items: center; 
+            max-width: 100%; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5); 
+            flex-shrink: 0;
+        }
+        .stats { 
+            background: #161b22; 
+            padding: 4px 12px; 
+            border-radius: 6px; 
+            border: 1px solid #30363d; 
+            display: inline-flex; 
+            gap: 12px; 
+            font-weight: 600; 
+            font-size: 12px; 
+            color: #58a6ff; 
+        }
+        .stat-val { color: #f0f6fc; font-family: monospace; font-size: 12px; }
+        button, select, input[type="number"] { 
+            background: #21262d; 
+            color: #c9d1d9; 
+            border: 1px solid #363b42; 
+            padding: 4px 8px; 
+            font-weight: 600; 
+            font-size: 12px; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            transition: 0.15s ease; 
+        }
+        input[type="number"] {
+            width: 55px;
+            text-align: center;
+            cursor: text;
+        }
         button:hover:not(:disabled), select:hover:not(:disabled) { background: #30363d; border-color: #8b949e; color: #fff; }
         button#srt { background: #238636; color: #fff; border-color: #2ea043; }
         button#srt:hover:not(:disabled) { background: #2ea043; }
-        button:disabled, select:disabled { background: #161b22; color: #484f58; border-color: #21262d; cursor: not-allowed; }
-        input[type="range"] { accent-color: #58a6ff; vertical-align: middle; cursor: pointer; }
-        label { font-size: 12px; color: #8b949e; font-weight: 500; }
-        .val-display { display: inline-block; min-width: 32px; text-align: left; margin-left: 2px; color: #58a6ff; font-weight: 600; font-family: monospace; }
-        canvas { background: #010409; border-radius: 8px; border: 1px solid #30363d; box-shadow: 0 8px 24px rgba(0,0,0,0.7); }
+        button#fsBtn { background: #1f6beb; color: #fff; border-color: #388bfd; }
+        button#fsBtn:hover:not(:disabled) { background: #388bfd; }
+        button:disabled, select:disabled, input:disabled { background: #161b22; color: #484f58; border-color: #21262d; cursor: not-allowed; }
+        input[type="range"] { accent-color: #58a6ff; vertical-align: middle; cursor: pointer; width: 60px; }
+        label { font-size: 11px; color: #8b949e; font-weight: 500; display: flex; align-items: center; gap: 4px; }
+        .val-display { display: inline-block; min-width: 24px; text-align: left; color: #58a6ff; font-weight: 600; font-family: monospace; }
+        
+        .canvas-container {
+            width: 100%;
+            flex-grow: 1;
+            display: grid;
+            gap: 6px;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            max-height: calc(100vh - 110px);
+        }
+
+        .single-view {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+        }
+
+        .grid-cell {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 4px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            min-height: 0;
+            min-width: 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+            overflow: hidden;
+        }
+
+        .grid-header {
+            width: 100%;
+            display: flex;
+            gap: 4px;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+            flex-shrink: 0;
+        }
+
+        .grid-header select {
+            font-size: 10px;
+            padding: 2px 4px;
+            max-width: 45%;
+        }
+
+        .grid-stats {
+            font-size: 10px;
+            color: #8b949e;
+            font-family: monospace;
+            white-space: nowrap;
+        }
+
+        .grid-stats span {
+            color: #58a6ff;
+        }
+
+        canvas { 
+            background: #010409; 
+            border-radius: 4px; 
+            border: 1px solid #30363d; 
+            width: 100%;
+            height: 100%;
+            flex-grow: 1;
+            min-height: 0;
+            display: block;
+        }
         .hidden { display: none !important; }
-        .audio-group { border-left: 1px solid #30363d; padding-left: 10px; display: inline-flex; gap: 10px; align-items: center; }
+        .audio-group { border-left: 1px solid #30363d; padding-left: 6px; display: inline-flex; gap: 6px; align-items: center; }
+
+        :fullscreen body, :-webkit-full-screen body {
+            padding: 6px;
+            background: #0b0e14;
+        }
     </style>
 </head>
 <body>
@@ -29,66 +162,15 @@
         <button id="shf">Shuffle</button>
         <button id="srt">Sort</button>
         <button id="pse" disabled>Pause</button>
-        <select id="alg">
-            <optgroup label="Exchange & Bubble">
-                <option value="b">Bubble / Exchange</option>
-                <option value="gn">Gnome Sort</option>
-                <option value="oe">Odd-Even (Brick)</option>
-                <option value="crc">Circle Sort</option>
-            </optgroup>
-            <optgroup label="Selection & Insertion">
-                <option value="s">Selection</option>
-                <option value="i">Insertion</option>
-                <option value="cyc">Cycle</option>
-                <option value="pnk">Pancake</option>
-                <option value="bingo">Bingo Sort</option>
-                <option value="patience">Patience Sort</option>
-                <option value="tree">Binary Search Tree Sort</option>
-                <option value="tourn">Tournament (Tree Selection)</option>
-            </optgroup>
-            <optgroup label="Divide & Conquer / Merge">
-                <option value="q">Quick</option>
-                <option value="m">Merge</option>
-                <option value="strand">Strand Sort</option>
-                <option value="quad">Quadsort</option>
-                <option value="drop">Drop-Merge Sort</option>
-                <option value="natmerge">Natural Merge Sort</option>
-            </optgroup>
-            <optgroup label="Heaps & Priority Trees">
-                <option value="h">Heap Sort</option>
-                <option value="weakheap">4-ary Heap Sort</option>
-                <option value="smooth">Smoothsort</option>
-                <option value="splay">Splay Tree Sort</option>
-                <option value="skewheap">Skew Heap Sort</option>
-                <option value="pairing">Pairing Heap Sort</option>
-                <option value="treapsort">Treap Sort (Randomized BST)</option>
-            </optgroup>
-            <optgroup label="Distribution & Non-Comparison">
-                <option value="cnt">Counting</option>
-                <option value="bkt">Bucket</option>
-                <option value="r">Radix</option>
-                <option value="g">Gravity (Bead)</option>
-                <option value="pigeon">Pigeonhole</option>
-                <option value="flash">Flashsort</option>
-                <option value="flag">American Flag Sort</option>
-                <option value="interp">Interpolation Sort</option>
-                <option value="prox">Proxmap Sort</option>
-                <option value="spread">Spreadsort</option>
-            </optgroup>
-            <optgroup label="Networks & Parallel">
-                <option value="bit">Bitonic Sort</option>
-                <option value="oem">Odd-Even Mergesort</option>
-                <option value="pw">Pairwise Sorting Network</option>
-                <option value="shear">Shear Sort (2D Mesh)</option>
-                <option value="bosenelson">Bose-Nelson Network</option>
-            </optgroup>
-            <optgroup label="Esoteric & Joke">
-                <option value="bg">Bogo & Esoteric</option>
-                <option value="st">Stalin (Purge)</option>
-                <option value="intdes">Intelligent Design Sort</option>
-            </optgroup>
-        </select>
-        <select id="varSelect"></select>
+        <button id="fsBtn">Fullscreen</button>
+        
+        <label>Grids: <input type="number" id="viewMode" min="1" max="100" value="1"></label>
+
+        <span id="singleAlgControls">
+            <select id="alg"></select>
+            <select id="varSelect"></select>
+        </span>
+
         <select id="md">
             <option value="cl">Columns</option>
             <option value="pyr">Pyramid Columns</option>
@@ -139,22 +221,503 @@
         <label>Delay: <input type="range" id="spd" min="0.1" max="100" step="0.1" value="8"><span id="spdv" class="val-display">8</span></label>
         <label id="rbl" class="hidden">Base: <input type="range" id="rb" min="2" max="16" value="4"><span id="rbv" class="val-display">4</span></label>
     </div>
-    <div class="stats">
+    <div class="stats" id="singleStats">
         <div>Comparisons: <span id="compCount" class="stat-val">0</span></div>
         <div>Swaps / Writes: <span id="swapCount" class="stat-val">0</span></div>
     </div>
-    <div><canvas id="cv" width="700" height="480"></canvas></div>
+
+    <div class="canvas-container" id="container"></div>
 
     <script>
-        const cv = document.getElementById('cv'), ctx = cv.getContext('2d'), shf = document.getElementById('shf'), srt = document.getElementById('srt'), pse = document.getElementById('pse');
-        const alg = document.getElementById('alg'), varSelect = document.getElementById('varSelect'), md = document.getElementById('md'), clr = document.getElementById('clr'), sz = document.getElementById('sz'), spd = document.getElementById('spd'), rb = document.getElementById('rb'), rbv = document.getElementById('rbv'), rbl = document.getElementById('rbl'), snd = document.getElementById('snd');
+        const container = document.getElementById('container'), shf = document.getElementById('shf'), srt = document.getElementById('srt'), pse = document.getElementById('pse'), fsBtn = document.getElementById('fsBtn');
+        const alg = document.getElementById('alg'), varSelect = document.getElementById('varSelect'), viewMode = document.getElementById('viewMode'), singleAlgControls = document.getElementById('singleAlgControls');
+        const md = document.getElementById('md'), clr = document.getElementById('clr'), sz = document.getElementById('sz'), spd = document.getElementById('spd'), rb = document.getElementById('rb'), rbv = document.getElementById('rbv'), rbl = document.getElementById('rbl'), snd = document.getElementById('snd');
         const scl = document.getElementById('scl'), panMode = document.getElementById('panMode'), vol = document.getElementById('vol'), volv = document.getElementById('volv');
-        const arrType = document.getElementById('arrType'), szv = document.getElementById('szv'), spdv = document.getElementById('spdv'), compCount = document.getElementById('compCount'), swapCount = document.getElementById('swapCount');
+        const arrType = document.getElementById('arrType'), szv = document.getElementById('szv'), spdv = document.getElementById('spdv'), compCount = document.getElementById('compCount'), swapCount = document.getElementById('swapCount'), singleStats = document.getElementById('singleStats');
 
-        let arr = [], active = [], isSrt = false, stopSrt = false, isPaused = false, totalComps = 0, totalSwaps = 0, statusMode = "";
-        let lastRenderTime = 0, verifiedIdx = -1, opsCount = 0;
+        const ALG_OPTIONS = `
+            <optgroup label="Exchange & Bubble">
+                <option value="b">Bubble / Exchange</option>
+                <option value="gn">Gnome Sort</option>
+                <option value="oe">Odd-Even (Brick)</option>
+                <option value="crc">Circle Sort</option>
+            </optgroup>
+            <optgroup label="Selection & Insertion">
+                <option value="s">Selection</option>
+                <option value="i">Insertion</option>
+                <option value="cyc">Cycle</option>
+                <option value="pnk">Pancake</option>
+                <option value="bingo">Bingo Sort</option>
+                <option value="patience">Patience Sort</option>
+                <option value="tree">Binary Search Tree Sort</option>
+                <option value="tourn">Tournament (Tree Selection)</option>
+            </optgroup>
+            <optgroup label="Divide & Conquer / Merge">
+                <option value="q">Quick</option>
+                <option value="m">Merge</option>
+                <option value="strand">Strand Sort</option>
+                <option value="quad">Quadsort</option>
+                <option value="drop">Drop-Merge Sort</option>
+                <option value="natmerge">Natural Merge Sort</option>
+            </optgroup>
+            <optgroup label="Heaps & Priority Trees">
+                <option value="h">Heap Sort</option>
+                <option value="weakheap">4-ary Heap Sort</option>
+                <option value="smooth">Smoothsort</option>
+                <option value="splay">Splay Tree Sort</option>
+                <option value="skewheap">Skew Heap Sort</option>
+                <option value="pairing">Pairing Heap Sort</option>
+                <option value="treapsort">Treap Sort (Randomized BST)</option>
+            </optgroup>
+            <optgroup label="Distribution & Non-Comparison">
+                <option value="cnt">Counting</option>
+                <option value="bkt">Bucket</option>
+                <option value="r">Radix</option>
+                <option value="g">Gravity (Bead)</option>
+                <option value="pigeon">Pigeonhole Sort</option>
+                <option value="flash">Flashsort</option>
+                <option value="flag">American Flag Sort</option>
+                <option value="interp">Interpolation Sort</option>
+                <option value="prox">Proxmap Sort</option>
+                <option value="spread">Spreadsort</option>
+            </optgroup>
+            <optgroup label="Networks & Parallel">
+                <option value="bit">Bitonic Sort</option>
+                <option value="oem">Odd-Even Mergesort</option>
+                <option value="pw">Pairwise Sorting Network</option>
+                <option value="shear">Shear Sort (2D Mesh)</option>
+                <option value="bosenelson">Bose-Nelson Network</option>
+            </optgroup>
+            <optgroup label="Esoteric & Joke">
+                <option value="bg">Bogo & Esoteric</option>
+                <option value="st">Stalin (Purge)</option>
+                <option value="intdes">Intelligent Design Sort</option>
+            </optgroup>
+        `;
 
+        alg.innerHTML = ALG_OPTIONS;
+
+        let instances = [];
+        let baseArray = [];
+        let isSrt = false, stopSrt = false, isPaused = false, opsCount = 0;
         let audioCtx = null, masterGain = null, biquadFilter = null;
+
+        const variants = {
+            b: [{v:"std",n:"Standard Bubble"}, {v:"cocktail",n:"Cocktail Shaker"}, {v:"comb",n:"Comb Sort"}, {v:"stooge",n:"Stooge Sort"}],
+            gn: [{v:"std",n:"Standard Gnome"}, {v:"optimized",n:"Optimized Gnome"}, {v:"quick",n:"Quick Gnome"}, {v:"double",n:"Double Gnome"}],
+            oe: [{v:"std",n:"Odd-Even Brick"}],
+            crc: [{v:"std",n:"Circle Sort"}],
+            s: [{v:"std",n:"Standard Selection"}, {v:"double",n:"Double Selection"}],
+            i: [{v:"std",n:"Standard Insertion"}, {v:"shell",n:"Shell Sort"}, {v:"ciura",n:"Ciura-Gap Shell Sort"}, {v:"binary",n:"Binary Insertion Sort"}, {v:"library",n:"Library Sort (Gapped)"}],
+            cyc: [{v:"std",n:"Standard Cycle Sort"}],
+            pnk: [{v:"std",n:"Standard Pancake Sort"}],
+            bingo: [{v:"std",n:"Bingo Sort"}],
+            patience: [{v:"std",n:"Patience Sort"}],
+            tree: [{v:"std",n:"BST Insertion & In-Order"}],
+            tourn: [{v:"std",n:"Tournament / Tree Selection"}],
+            q: [{v:"std",n:"Single-Pivot Quick"}, {v:"dual",n:"Dual-Pivot Quick"}, {v:"3way",n:"3-Way Partition (Dutch Flag)"}],
+            m: [{v:"out",n:"Out-of-Place Merge"}, {v:"iter",n:"Bottom-Up Merge"}, {v:"inplace",n:"In-Place Merge"}, {v:"weave",n:"Weave Merge"}, {v:"tim",n:"Tim Sort"}],
+            strand: [{v:"std",n:"Strand Sort"}],
+            quad: [{v:"std",n:"Quadsort"}],
+            drop: [{v:"std",n:"Drop-Merge Sort"}],
+            natmerge: [{v:"std",n:"Natural Merge Sort"}],
+            h: [{v:"max",n:"Max Heap Sort"}, {v:"min",n:"Min Heap Sort"}, {v:"ternary",n:"Ternary Heap Sort"}],
+            weakheap: [{v:"std",n:"4-ary Quaternary Heap"}],
+            smooth: [{v:"std",n:"Smoothsort (Leonardo Heap)"}],
+            splay: [{v:"std",n:"Splay Tree Sort"}],
+            skewheap: [{v:"std",n:"Skew Heap Sort"}],
+            pairing: [{v:"std",n:"Pairing Heap Sort"}],
+            treapsort: [{v:"std",n:"Treap Sort"}],
+            cnt: [{v:"std",n:"Counting Sort"}],
+            bkt: [{v:"std",n:"Bucket Sort"}],
+            r: [{v:"lsd",n:"Radix LSD"}, {v:"msd",n:"Radix MSD"}],
+            g: [{v:"std",n:"Gravity (Bead) Sort"}],
+            pigeon: [{v:"std",n:"Pigeonhole Sort"}],
+            flash: [{v:"std",n:"Flashsort"}],
+            flag: [{v:"std",n:"American Flag Sort"}],
+            interp: [{v:"std",n:"Interpolation Sort"}],
+            prox: [{v:"std",n:"Proxmap Sort"}],
+            spread: [{v:"std",n:"Spreadsort"}],
+            bit: [{v:"std",n:"Bitonic Sort"}],
+            oem: [{v:"std",n:"Odd-Even Mergesort"}],
+            pw: [{v:"std",n:"Pairwise Sorting Network"}],
+            shear: [{v:"std",n:"Shear Sort (2D Mesh)"}],
+            bosenelson: [{v:"std",n:"Bose-Nelson Network"}],
+            bg: [{v:"std",n:"Standard Bogo"}, {v:"imp",n:"Improvised Bogo"}, {v:"bozo",n:"Bozo Sort"}, {v:"slow",n:"Slowsort"}, {v:"sleep",n:"Sleep Sort"}, {v:"quantumbogo",n:"Quantum Bogo Sort"}, {v:"miracle",n:"Miracle Sort (Hope)"}],
+            st: [{v:"std",n:"Purge All (Strict)"}, {v:"selective",n:"Selective Purge (50%)"}, {v:"gulag",n:"Send to Back (Exile)"}],
+            intdes: [{v:"std",n:"Intelligent Design Sort"}]
+        };
+
+        class SortInstance {
+            constructor(id, parentEl, isGrid) {
+                this.id = id;
+                this.isGrid = isGrid;
+                this.arr = [];
+                this.active = [];
+                this.totalComps = 0;
+                this.totalSwaps = 0;
+                this.statusMode = "";
+                this.verifiedIdx = -1;
+                this.lastRenderTime = 0;
+
+                this.dom = {};
+                this.buildDOM(parentEl);
+            }
+
+            buildDOM(parentEl) {
+                if (this.isGrid) {
+                    const cell = document.createElement('div');
+                    cell.className = 'grid-cell';
+
+                    const header = document.createElement('div');
+                    header.className = 'grid-header';
+
+                    const algSel = document.createElement('select');
+                    algSel.innerHTML = ALG_OPTIONS;
+                    algSel.value = Object.keys(variants)[this.id % Object.keys(variants).length];
+
+                    const varSel = document.createElement('select');
+
+                    const stats = document.createElement('div');
+                    stats.className = 'grid-stats';
+                    stats.innerHTML = `C:<span id="c_${this.id}">0</span> S:<span id="s_${this.id}">0</span>`;
+
+                    header.appendChild(algSel);
+                    header.appendChild(varSel);
+                    header.appendChild(stats);
+
+                    const cv = document.createElement('canvas');
+
+                    cell.appendChild(header);
+                    cell.appendChild(cv);
+                    parentEl.appendChild(cell);
+
+                    this.dom = {
+                        cv: cv,
+                        ctx: cv.getContext('2d'),
+                        algSel: algSel,
+                        varSel: varSel,
+                        compCount: cell.querySelector(`#c_${this.id}`),
+                        swapCount: cell.querySelector(`#s_${this.id}`)
+                    };
+
+                    this.updateVarOptions();
+                    algSel.addEventListener('change', () => {
+                        this.updateVarOptions();
+                        if (algSel.value === 'r') rbl.className = '';
+                    });
+                } else {
+                    const cv = document.createElement('canvas');
+                    parentEl.appendChild(cv);
+                    this.dom = {
+                        cv: cv,
+                        ctx: cv.getContext('2d'),
+                        algSel: alg,
+                        varSel: varSelect,
+                        compCount: compCount,
+                        swapCount: swapCount
+                    };
+                }
+            }
+
+            updateVarOptions() {
+                const key = this.dom.algSel.value;
+                this.dom.varSel.innerHTML = "";
+                if (variants[key]) {
+                    variants[key].forEach(x => {
+                        const o = document.createElement("option");
+                        o.value = x.v; o.textContent = x.n;
+                        this.dom.varSel.appendChild(o);
+                    });
+                }
+            }
+
+            reset(sourceArr) {
+                this.arr = [...sourceArr];
+                this.active = [];
+                this.totalComps = 0;
+                this.totalSwaps = 0;
+                this.statusMode = "";
+                this.verifiedIdx = -1;
+                this.upStats();
+                this.resizeCanvas();
+            }
+
+            resizeCanvas() {
+                const cv = this.dom.cv;
+                const containerEl = cv.parentElement;
+                let width = containerEl.clientWidth - (this.isGrid ? 8 : 0);
+                let height = containerEl.clientHeight - (this.isGrid ? 28 : 0);
+                if (height <= 0) height = 100;
+
+                const dpr = window.devicePixelRatio || 1;
+                cv.width = width * dpr;
+                cv.height = height * dpr;
+                cv.style.width = width + 'px';
+                cv.style.height = height + 'px';
+
+                this.dom.ctx.resetTransform();
+                this.dom.ctx.scale(dpr, dpr);
+                this.rndr();
+            }
+
+            upStats() {
+                if (this.dom.compCount) this.dom.compCount.textContent = this.totalComps.toLocaleString();
+                if (this.dom.swapCount) this.dom.swapCount.textContent = this.totalSwaps.toLocaleString();
+            }
+
+            col(v, i) {
+                if (this.statusMode === "vf") {
+                    if (i <= this.verifiedIdx) return '#2ea043';
+                }
+                if (this.active.includes(i)) {
+                    return this.statusMode === "sw" ? '#ffffff' : '#f85149';
+                }
+                return clr.value === 'white' ? '#e6edf3' : `hsl(${(v/parseInt(sz.value))*360},100%,50%)`;
+            }
+
+            rndr() {
+                this.upStats();
+                const cv = this.dom.cv;
+                const ctx = this.dom.ctx;
+                const width = parseFloat(cv.style.width) || cv.clientWidth;
+                const height = parseFloat(cv.style.height) || cv.clientHeight;
+
+                ctx.clearRect(0, 0, width, height);
+                const m = md.value, len = this.arr.length, cX = width/2, cY = height/2, r = Math.max(5, Math.min(width, height)/2 - 5);
+                for (let i = 0; i < len; i++) {
+                    ctx.fillStyle = this.col(this.arr[i], i);
+                    if (m === 'cc') { ctx.beginPath(); ctx.moveTo(cX, cY); ctx.arc(cX, cY, r, i*(2*Math.PI)/len - Math.PI/2, (i+1)*(2*Math.PI)/len - Math.PI/2); ctx.fill(); }
+                    else if (m === 'cl') { const w = width/len, h = ((this.arr[i]+1)/parseInt(sz.value))*(height-5); ctx.fillRect(i*w, height-h, Math.max(0.5, w), h); }
+                    else if (m === 'pyr') { const w = width/len, h = ((this.arr[i]+1)/parseInt(sz.value))*(height-5)/2; ctx.fillRect(i*w, cY - h, Math.max(0.5, w), h * 2); }
+                    else if (m === 'dt') { const s = width/len, x = i*s + s/2, y = height - (((this.arr[i]+1)/parseInt(sz.value))*(height-10)) - 5; ctx.beginPath(); ctx.arc(x, y, Math.max(1, Math.min(4, 200/len)), 0, 2*Math.PI); ctx.fill(); }
+                    else if (m === 'dc') { const d = ((this.arr[i]+1)/parseInt(sz.value))*r, a = i*(2*Math.PI)/len - Math.PI/2; ctx.beginPath(); ctx.arc(cX + d*Math.cos(a), cY + d*Math.sin(a), Math.max(1, Math.min(4, 200/len)), 0, 2*Math.PI); ctx.fill(); }
+                    else if (m === 'stb') { const d = ((this.arr[i]+1)/parseInt(sz.value))*r, a = i*(2*Math.PI)/len - Math.PI/2; ctx.beginPath(); ctx.moveTo(cX, cY); ctx.lineTo(cX + d*Math.cos(a), cY + d*Math.sin(a)); ctx.strokeStyle = this.col(this.arr[i], i); ctx.lineWidth = Math.max(0.5, (2*Math.PI*r)/len); ctx.stroke(); }
+                }
+            }
+
+            async tC(i, j) { 
+                this.totalComps++; 
+                this.active = [i, j]; 
+                this.statusMode = "cp"; 
+                if (performance.now() - this.lastRenderTime > 16 || getDelay() > 1) { 
+                    this.rndr(); 
+                    this.lastRenderTime = performance.now(); 
+                } 
+                if (this.arr[i] !== undefined) playTone(this.arr[i], i, instances.length); 
+                await sleep(); 
+            }
+
+            async tS(i, j) { 
+                this.totalSwaps++; 
+                this.active = [i, j]; 
+                this.statusMode = "sw"; 
+                if (performance.now() - this.lastRenderTime > 16 || getDelay() > 1) { 
+                    this.rndr(); 
+                    this.lastRenderTime = performance.now(); 
+                } 
+                if (this.arr[i] !== undefined) playTone(this.arr[i], i, instances.length); 
+                await sleep(); 
+            }
+
+            async runAlgorithm() {
+                const a = this.dom.algSel.value, v = this.dom.varSel.value;
+                const arr = this.arr;
+
+                const tC = this.tC.bind(this);
+                const tS = this.tS.bind(this);
+
+                const helperInsertSort = async (subArr, startIdx = 0) => {
+                    for (let i = 1; i < subArr.length; i++) {
+                        let k = subArr[i], j = i - 1;
+                        while (j >= 0) {
+                            if (stopSrt) return;
+                            await tC(startIdx + j, startIdx + j + 1);
+                            if (subArr[j] > k) {
+                                subArr[j + 1] = subArr[j];
+                                await tS(startIdx + j + 1, startIdx + j + 1);
+                                j--;
+                            } else break;
+                        }
+                        subArr[j + 1] = k;
+                        await tS(startIdx + j + 1, startIdx + j + 1);
+                    }
+                };
+
+                // ALGORITHMS
+                const bubble = async () => { for (let i = 0; i < arr.length-1; i++) { for (let j = 0; j < arr.length-i-1; j++) { if (stopSrt) return; await tC(j, j+1); if (arr[j] > arr[j+1]) { [arr[j], arr[j+1]] = [arr[j+1], arr[j]]; await tS(j, j+1); } } } };
+                const cocktail = async () => { let s = 0, e = arr.length - 1, sw = true; while (sw) { sw = false; for (let i = s; i < e; i++) { if (stopSrt) return; await tC(i, i+1); if (arr[i] > arr[i+1]) { [arr[i], arr[i+1]] = [arr[i+1], arr[i]]; await tS(i, i+1); sw = true; } } if (!sw) break; e--; for (let i = e - 1; i >= s; i--) { if (stopSrt) return; await tC(i, i+1); if (arr[i] > arr[i+1]) { [arr[i], arr[i+1]] = [arr[i+1], arr[i]]; await tS(i, i+1); sw = true; } } s++; } };
+                const comb = async () => { let gap = arr.length, shrink = 1.3, sorted = false; while (!sorted) { gap = Math.floor(gap / shrink); if (gap <= 1) { gap = 1; sorted = true; } for (let i = 0; i + gap < arr.length; i++) { if (stopSrt) return; await tC(i, i + gap); if (arr[i] > arr[i + gap]) { [arr[i], arr[i + gap]] = [arr[i + gap], arr[i]]; await tS(i, i + gap); sorted = false; } } } };
+                const stooge = async () => { const rec = async (l, h) => { if (stopSrt) return; await tC(l, h); if (arr[l] > arr[h]) { [arr[l], arr[h]] = [arr[h], arr[l]]; await tS(l, h); } if (h - l + 1 > 2) { let t = Math.floor((h - l + 1) / 3); await rec(l, h - t); await rec(l + t, h); await rec(l, h - t); } }; await rec(0, arr.length - 1); };
+                const gnome = async () => { let pos = 0; while (pos < arr.length) { if (stopSrt) return; if (pos === 0) pos++; await tC(pos - 1, pos); if (arr[pos] >= arr[pos - 1]) pos++; else { [arr[pos], arr[pos - 1]] = [arr[pos - 1], arr[pos]]; await tS(pos, pos - 1); pos--; } } };
+                const gnomeOptimized = async () => { for (let pos = 1; pos < arr.length; pos++) { let cur = pos; while (cur > 0) { if (stopSrt) return; await tC(cur - 1, cur); if (arr[cur] < arr[cur - 1]) { [arr[cur], arr[cur - 1]] = [arr[cur - 1], arr[cur]]; await tS(cur, cur - 1); cur--; } else break; } } };
+                const gnomeQuick = async () => { let pos = 1, last = 2; while (pos < arr.length) { if (stopSrt) return; await tC(pos - 1, pos); if (arr[pos] >= arr[pos - 1]) { pos = last; last++; } else { [arr[pos], arr[pos - 1]] = [arr[pos - 1], arr[pos]]; await tS(pos, pos - 1); pos--; if (pos === 0) { pos = last; last++; } } } };
+                const gnomeDouble = async () => { let left = 0, right = arr.length - 1; while (left < right) { let pos = left + 1; while (pos <= right) { if (stopSrt) return; await tC(pos - 1, pos); if (arr[pos] < arr[pos - 1]) { [arr[pos], arr[pos - 1]] = [arr[pos - 1], arr[pos]]; await tS(pos, pos - 1); if (pos > left + 1) pos--; else pos++; } else pos++; } right--; pos = right - 1; while (pos >= left) { if (stopSrt) return; await tC(pos, pos + 1); if (arr[pos] > arr[pos + 1]) { [arr[pos], arr[pos + 1]] = [arr[pos + 1], arr[pos]]; await tS(pos, pos + 1); if (pos < right - 1) pos++; else pos--; } else pos--; } left++; } };
+                const circleSort = async () => { const circleRec = async (l, h) => { if (l >= h || stopSrt) return 0; let swaps = 0, low = l, high = h; while (low < high) { await tC(low, high); if (arr[low] > arr[high]) { [arr[low], arr[high]] = [arr[high], arr[low]]; await tS(low, high); swaps++; } low++; high--; } if (low === high) { await tC(low, high + 1); if (arr[low] > arr[high + 1]) { [arr[low], arr[high + 1]] = [arr[high + 1], arr[low]]; await tS(low, high + 1); swaps++; } } let mid = Math.floor((h - l) / 2); swaps += await circleRec(l, l + mid); swaps += await circleRec(l + mid + 1, h); return swaps; }; while ((await circleRec(0, arr.length - 1)) > 0 && !stopSrt); };
+                const oddEven = async () => { let sorted = false; while (!sorted) { sorted = true; for (let i = 1; i < arr.length - 1; i += 2) { if (stopSrt) return; await tC(i, i+1); if (arr[i] > arr[i+1]) { [arr[i], arr[i+1]] = [arr[i+1], arr[i]]; await tS(i, i+1); sorted = false; } } for (let i = 0; i < arr.length - 1; i += 2) { if (stopSrt) return; await tC(i, i+1); if (arr[i] > arr[i+1]) { [arr[i], arr[i+1]] = [arr[i+1], arr[i]]; await tS(i, i+1); sorted = false; } } } };
+                const selection = async () => { let n = arr.length; for (let i = 0; i < n - 1; i++) { let minIdx = i; for (let j = i + 1; j < n; j++) { if (stopSrt) return; await tC(minIdx, j); if (arr[j] < arr[minIdx]) minIdx = j; } if (minIdx !== i) { [arr[i], arr[minIdx]] = [arr[minIdx], arr[i]]; await tS(i, minIdx); } } };
+                const doubleSelection = async () => { let l = 0, r = arr.length - 1; while (l < r) { let minIdx = l, maxIdx = l; for (let i = l + 1; i <= r; i++) { if (stopSrt) return; await tC(minIdx, i); if (arr[i] < arr[minIdx]) minIdx = i; await tC(maxIdx, i); if (arr[i] > arr[maxIdx]) maxIdx = i; } if (minIdx !== l) { [arr[l], arr[minIdx]] = [arr[minIdx], arr[l]]; await tS(l, minIdx); if (maxIdx === l) maxIdx = minIdx; } if (maxIdx !== r) { [arr[r], arr[maxIdx]] = [arr[maxIdx], arr[r]]; await tS(r, maxIdx); } l++; r--; } };
+                const insert = async (l, h) => { for (let i = l + 1; i <= h; i++) { let k = arr[i], j = i - 1; while (j >= l) { if (stopSrt) return; await tC(j, j+1); if (arr[j] > k) { arr[j+1] = arr[j]; await tS(j, j+1); j--; } else break; } arr[j+1] = k; await tS(j+1, j+1); } };
+                const shell = async () => { for (let g = Math.floor(arr.length/2); g > 0; g = Math.floor(g/2)) { for (let i = g; i < arr.length; i++) { let t = arr[i], j = i; while (j >= g) { if (stopSrt) return; await tC(j - g, j); if (arr[j - g] > t) { arr[j] = arr[j - g]; await tS(j - g, j); j -= g; } else break; } arr[j] = t; await tS(j, j); } } };
+                const ciuraShellSort = async () => { const gaps = [1, 4, 10, 23, 57, 132, 301, 701, 1750, 4200]; let n = arr.length; for (let gIdx = gaps.length - 1; gIdx >= 0; gIdx--) { let g = gaps[gIdx]; if (g >= n) continue; for (let i = g; i < n; i++) { let t = arr[i], j = i; while (j >= g) { if (stopSrt) return; await tC(j - g, j); if (arr[j - g] > t) { arr[j] = arr[j - g]; await tS(j - g, j); j -= g; } else break; } arr[j] = t; await tS(j, j); } } };
+                const binaryInsert = async () => { for (let i = 1; i < arr.length; i++) { let key = arr[i], l = 0, r = i - 1; while (l <= r) { if (stopSrt) return; let m = Math.floor((l + r) / 2); await tC(m, i); if (arr[m] > key) r = m - 1; else l = m + 1; } for (let j = i - 1; j >= l; j--) { if (stopSrt) return; arr[j + 1] = arr[j]; await tS(j, j + 1); } arr[l] = key; await tS(l, l); } };
+                const librarySort = async () => { let n = arr.length, gapped = new Array(n * 2).fill(-1); gapped[0] = arr[0]; let len = 1; for (let i = 1; i < n; i++) { if (stopSrt) return; let key = arr[i], l = 0, r = len * 2; while (l <= r) { let m = Math.floor((l + r) / 2); if (gapped[m] === -1) { l = m + 1; continue; } await tC(i, Math.min(n - 1, m)); if (gapped[m] > key) r = m - 1; else l = m + 1; } gapped.splice(l, 0, key); len++; } let idx = 0; for (let v of gapped) { if (v !== -1 && idx < n) { arr[idx] = v; await tS(idx, idx); idx++; } } };
+                const cycle = async () => { let n = arr.length; for (let cs = 0; cs <= n - 2; cs++) { let item = arr[cs], pos = cs; for (let i = cs + 1; i < n; i++) { if (stopSrt) return; await tC(cs, i); if (arr[i] < item) pos++; } if (pos === cs) continue; while (item === arr[pos]) { if (stopSrt) return; await tC(cs, pos); pos++; } if (pos !== cs) { let t = arr[pos]; arr[pos] = item; item = t; await tS(cs, pos); } while (pos !== cs) { pos = cs; for (let i = cs + 1; i < n; i++) { if (stopSrt) return; await tC(cs, i); if (arr[i] < item) pos++; } while (item === arr[pos]) { if (stopSrt) return; await tC(cs, pos); pos++; } if (item !== arr[pos]) { let t = arr[pos]; arr[pos] = item; item = t; await tS(cs, pos); } } } };
+                const pancake = async () => { const flip = async (k) => { let l = 0, r = k; while (l < r) { if (stopSrt) return; [arr[l], arr[r]] = [arr[r], arr[l]]; await tS(l, r); l++; r--; } }; for (let cur = arr.length; cur > 1; cur--) { if (stopSrt) return; let mi = 0; for (let i = 1; i < cur; i++) { if (stopSrt) return; await tC(mi, i); if (arr[i] > arr[mi]) mi = i; } if (mi !== cur - 1) { if (mi !== 0) await flip(mi); await flip(cur - 1); } } };
+                const bingoSort = async () => { let n = arr.length, min = arr[0], max = arr[0]; for (let i = 1; i < n; i++) { await tC(i - 1, i); if (arr[i] < min) min = arr[i]; if (arr[i] > max) max = arr[i]; } let bingo = min, nextBingo = max, nextElem = 0; while (bingo < max) { let start = nextElem; for (let i = start; i < n; i++) { if (stopSrt) return; await tC(i, nextElem); if (arr[i] === bingo) { [arr[i], arr[nextElem]] = [arr[nextElem], arr[i]]; await tS(i, nextElem); nextElem++; } else if (arr[i] > bingo && arr[i] < nextBingo) { nextBingo = arr[i]; } } bingo = nextBingo; nextBingo = max; } };
+                const patienceSort = async () => { let piles = []; for (let i = 0; i < arr.length; i++) { if (stopSrt) return; let v = arr[i], placed = false; for (let p = 0; p < piles.length; p++) { await tC(i, i); if (piles[p][piles[p].length - 1] >= v) { piles[p].push(v); placed = true; break; } } if (!placed) piles.push([v]); } let idx = 0; while (piles.length > 0) { if (stopSrt) return; let minP = 0; for (let p = 1; p < piles.length; p++) { await tC(idx, Math.min(arr.length - 1, idx + p)); if (piles[p][piles[p].length - 1] < piles[minP][piles[minP].length - 1]) minP = p; } arr[idx] = piles[minP].pop(); await tS(idx, idx); if (piles[minP].length === 0) piles.splice(minP, 1); idx++; } };
+                const treeSort = async () => { class Node { constructor(v, idx) { this.v = v; this.idx = idx; this.left = null; this.right = null; } } let root = null; const insertNode = async (r, val, i) => { if (!r) return new Node(val, i); await tC(i, r.idx); if (val < r.v) r.left = await insertNode(r.left, val, i); else r.right = await insertNode(r.right, val, i); return r; }; for (let i = 0; i < arr.length; i++) { if (stopSrt) return; root = await insertNode(root, arr[i], i); } let idx = 0; const inOrder = async (r) => { if (!r || stopSrt) return; await inOrder(r.left); arr[idx] = r.v; await tS(idx, idx); idx++; await inOrder(r.right); }; await inOrder(root); };
+                const tournamentSort = async () => { let n = arr.length, tree = new Array(2 * n); for (let i = 0; i < n; i++) tree[n + i] = { v: arr[i], idx: i }; for (let i = n - 1; i > 0; i--) { await tC(tree[2*i].idx, tree[2*i+1].idx); tree[i] = tree[2*i].v <= tree[2*i+1].v ? tree[2*i] : tree[2*i+1]; } for (let i = 0; i < n; i++) { if (stopSrt) return; let winner = tree[1]; arr[i] = winner.v; await tS(i, winner.idx); tree[n + winner.idx] = { v: Infinity, idx: winner.idx }; let p = Math.floor((n + winner.idx) / 2); while (p > 0) { await tC(tree[2*p].idx, tree[2*p+1].idx); tree[p] = tree[2*p].v <= tree[2*p+1].v ? tree[2*p] : tree[2*p+1]; p = Math.floor(p / 2); } } };
+                const quick = async () => { const q = async (l, h) => { if (l < h && !stopSrt) { let p = arr[h], i = l - 1; for (let j = l; j < h; j++) { await tC(j, h); if (arr[j] < p) { i++; [arr[i], arr[j]] = [arr[j], arr[i]]; await tS(i, j); } } [arr[i+1], arr[h]] = [arr[h], arr[i+1]]; await tS(i+1, h); let pi = i + 1; await q(l, pi - 1); await q(pi + 1, h); } }; await q(0, arr.length - 1); };
+                const dualQuick = async () => { const dq = async (l, h) => { if (l < h && !stopSrt) { await tC(l, h); if (arr[l] > arr[h]) { [arr[l], arr[h]] = [arr[h], arr[l]]; await tS(l, h); } let p = arr[l], q = arr[h], lI = l + 1, gI = h - 1, k = lI; while (k <= gI) { if (stopSrt) return; await tC(k, l); if (arr[k] < p) { [arr[k], arr[lI]] = [arr[lI], arr[k]]; await tS(k, lI); lI++; } else { await tC(k, h); if (arr[k] >= q) { while (k < gI) { await tC(gI, h); if (arr[gI] > q) gI--; else break; } [arr[k], arr[gI]] = [arr[gI], arr[k]]; await tS(k, gI); gI--; await tC(k, l); if (arr[k] < p) { [arr[k], arr[lI]] = [arr[lI], arr[k]]; await tS(k, lI); lI++; } } } k++; } lI--; gI++; [arr[l], arr[lI]] = [arr[lI], arr[l]]; await tS(l, lI); [arr[h], arr[gI]] = [arr[gI], arr[h]]; await tS(h, gI); await dq(l, lI - 1); await dq(lI + 1, gI - 1); await dq(gI + 1, h); } }; await dq(0, arr.length - 1); };
+                const quick3Way = async () => { const q3 = async (l, h) => { if (l >= h || stopSrt) return; let lt = l, gt = h, p = arr[l], i = l + 1; while (i <= gt) { if (stopSrt) return; await tC(i, lt); if (arr[i] < p) { [arr[lt], arr[i]] = [arr[i], arr[lt]]; await tS(lt, i); lt++; i++; } else if (arr[i] > p) { [arr[i], arr[gt]] = [arr[gt], arr[i]]; await tS(i, gt); gt--; } else i++; } await q3(l, lt - 1); await q3(gt + 1, h); }; await q3(0, arr.length - 1); };
+                const mergeOut = async () => { let n = arr.length; for (let sz = 1; sz < n; sz *= 2) { for (let l = 0; l < n - 1; l += 2 * sz) { let m = Math.min(l + sz - 1, n - 1), r = Math.min(l + 2 * sz - 1, n - 1), temp = [], i = l, j = m + 1; while (i <= m && j <= r) { if (stopSrt) return; await tC(i, j); if (arr[i] <= arr[j]) temp.push(arr[i++]); else temp.push(arr[j++]); } while (i <= m) temp.push(arr[i++]); while (j <= r) temp.push(arr[j++]); for (let k = 0; k < temp.length; k++) { if (stopSrt) return; arr[l + k] = temp[k]; await tS(l + k, l + k); } } } };
+                const mergeIter = async () => { let n = arr.length; for (let s = 1; s < n; s *= 2) { for (let l = 0; l < n - 1; l += 2 * s) { let m = Math.min(l + s - 1, n - 1), r = Math.min(l + 2 * s - 1, n - 1), left = arr.slice(l, m + 1), right = arr.slice(m + 1, r + 1), i = 0, j = 0, k = l; while (i < left.length && j < right.length) { if (stopSrt) return; await tC(l + i, m + 1 + j); if (left[i] <= right[j]) { arr[k] = left[i++]; } else { arr[k] = right[j++]; } await tS(k, k); k++; } while (i < left.length) { if (stopSrt) return; arr[k] = left[i++]; await tS(k, k); k++; } while (j < right.length) { if (stopSrt) return; arr[k] = right[j++]; await tS(k, k); k++; } } } };
+                const mergeInP = async () => { const mIn = async (l, m, r) => { let i = l, j = m + 1; while (i <= m && j <= r) { if (stopSrt) return; await tC(i, j); if (arr[i] <= arr[j]) i++; else { let v = arr[j], idx = j; while (idx !== i) { arr[idx] = arr[idx - 1]; await tS(idx, idx - 1); idx--; } arr[i] = v; await tS(i, i); i++; m++; j++; } } }; const ms = async (l, r) => { if (l < r && !stopSrt) { let m = Math.floor((l + r) / 2); await ms(l, m); await ms(m + 1, r); await mIn(l, m, r); } }; await ms(0, arr.length - 1); };
+                const mergeWeave = async () => { const weave = async (l, r) => { if (r - l < 1 || stopSrt) return; let m = Math.floor((l + r) / 2); await weave(l, m); await weave(m + 1, r); let temp = []; for (let i = l, j = m + 1; i <= m || j <= r;) { if (i <= m) temp.push(arr[i++]); if (j <= r) temp.push(arr[j++]); } for (let k = 0; k < temp.length; k++) { arr[l + k] = temp[k]; await tS(l + k, l + k); } await insert(l, r); }; await weave(0, arr.length - 1); };
+                const timSort = async () => { const RUN = 16, n = arr.length; for (let i = 0; i < n; i += RUN) await insert(i, Math.min(i + RUN - 1, n - 1)); for (let size = RUN; size < n; size = 2 * size) { for (let left = 0; left < n; left += 2 * size) { let mid = left + size - 1, right = Math.min(left + 2 * size - 1, n - 1); if (mid < right) { let temp = [], i = left, j = mid + 1; while (i <= mid && j <= right) { if (stopSrt) return; await tC(i, j); if (arr[i] <= arr[j]) temp.push(arr[i++]); else temp.push(arr[j++]); } while (i <= mid) temp.push(arr[i++]); while (j <= right) temp.push(arr[j++]); for (let k = 0; k < temp.length; k++) { arr[left + k] = temp[k]; await tS(left + k, left + k); } } } } };
+                const strandSort = async () => { let ip = [...arr], op = []; while (ip.length > 0 && !stopSrt) { let sub = [ip.shift()]; for (let i = 0; i < ip.length;) { await tC(i, i); if (ip[i] >= sub[sub.length - 1]) { sub.push(ip.splice(i, 1)[0]); } else i++; } if (op.length === 0) op = sub; else { let temp = [], i = 0, j = 0; while (i < op.length && j < sub.length) { await tC(i, j); if (op[i] <= sub[j]) temp.push(op[i++]); else temp.push(sub[j++]); } while (i < op.length) temp.push(op[i++]); while (j < sub.length) temp.push(sub[j++]); op = temp; } for (let k = 0; k < op.length; k++) { arr[k] = op[k]; await tS(k, k); } } };
+                const quadSort = async () => { for (let i = 0; i < arr.length; i += 4) await insert(i, Math.min(i + 3, arr.length - 1)); for (let s = 4; s < arr.length; s *= 2) { for (let l = 0; l < arr.length; l += 2 * s) { let m = Math.min(l + s - 1, arr.length - 1), r = Math.min(l + 2 * s - 1, arr.length - 1); if (m < r) { let temp = [], i = l, j = m + 1; while (i <= m && j <= r) { await tC(i, j); if (arr[i] <= arr[j]) temp.push(arr[i++]); else temp.push(arr[j++]); } while (i <= m) temp.push(arr[i++]); while (j <= r) temp.push(arr[j++]); for (let k = 0; k < temp.length; k++) { arr[l + k] = temp[k]; await tS(l + k, l + k); } } } } };
+                const dropMergeSort = async () => { if (arr.length <= 1) return; let kept = [arr[0]], dropped = []; for (let i = 1; i < arr.length; i++) { if (stopSrt) return; await tC(i - 1, i); if (arr[i] >= kept[kept.length - 1]) kept.push(arr[i]); else dropped.push(arr[i]); } await helperInsertSort(dropped, 0); let i = 0, j = 0, k = 0; while (i < kept.length && j < dropped.length) { if (stopSrt) return; await tC(k, k); arr[k] = kept[i] <= dropped[j] ? kept[i++] : dropped[j++]; await tS(k, k); k++; } while (i < kept.length) { arr[k] = kept[i++]; await tS(k, k); k++; } while (j < dropped.length) { arr[k] = dropped[j++]; await tS(k, k); k++; } };
+                const naturalMergeSort = async () => { let n = arr.length, sorted = false; while (!sorted && !stopSrt) { sorted = true; let l = 0; while (l < n) { let m = l; while (m < n - 1) { await tC(m, m + 1); if (arr[m] <= arr[m + 1]) m++; else break; } if (m === n - 1 && l === 0) break; let r = m + 1; while (r < n - 1) { await tC(r, r + 1); if (arr[r] <= arr[r + 1]) r++; else break; } if (r < n) { sorted = false; let temp = [], i = l, j = m + 1; while (i <= m && j <= r) { await tC(i, j); if (arr[i] <= arr[j]) temp.push(arr[i++]); else temp.push(arr[j++]); } while (i <= m) temp.push(arr[i++]); while (j <= r) temp.push(arr[j++]); for (let k = 0; k < temp.length; k++) { arr[l + k] = temp[k]; await tS(l + k, l + k); } l = r + 1; } else l = m + 1; } } };
+                const heapMax = async () => { let n = arr.length; const hp = async (len, i) => { let max = i, l = 2*i + 1, r = 2*i + 2; if (l < len) { await tC(l, max); if (arr[l] > arr[max]) max = l; } if (r < len) { await tC(r, max); if (arr[r] > arr[max]) max = r; } if (max !== i) { [arr[i], arr[max]] = [arr[max], arr[i]]; await tS(i, max); await hp(len, max); } }; for (let i = Math.floor(n/2)-1; i >= 0; i--) await hp(n, i); for (let i = n - 1; i > 0; i--) { [arr[0], arr[i]] = [arr[i], arr[0]]; await tS(0, i); await hp(i, 0); } };
+                const heapMin = async () => { let n = arr.length; const hp = async (len, i) => { let min = i, l = 2*i + 1, r = 2*i + 2; if (l < len) { await tC(l, min); if (arr[l] < arr[min]) min = l; } if (r < len) { await tC(r, min); if (arr[r] < arr[min]) min = r; } if (min !== i) { [arr[i], arr[min]] = [arr[min], arr[i]]; await tS(i, min); await hp(len, min); } }; for (let i = Math.floor(n/2)-1; i >= 0; i--) await hp(n, i); for (let i = n - 1; i > 0; i--) { [arr[0], arr[i]] = [arr[i], arr[0]]; await tS(0, i); await hp(i, 0); } };
+                const ternaryHeap = async () => { let n = arr.length; const hp = async (len, i) => { let max = i; for (let c = 1; c <= 3; c++) { let child = 3*i + c; if (child < len) { await tC(child, max); if (arr[child] > arr[max]) max = child; } } if (max !== i) { [arr[i], arr[max]] = [arr[max], arr[i]]; await tS(i, max); await hp(len, max); } }; for (let i = Math.floor(n/3); i >= 0; i--) await hp(n, i); for (let i = n - 1; i > 0; i--) { [arr[0], arr[i]] = [arr[i], arr[0]]; await tS(0, i); await hp(i, 0); } };
+                const quaternaryHeapSort = async () => { let n = arr.length; const hp = async (len, i) => { let max = i; for (let c = 1; c <= 4; c++) { let child = 4*i + c; if (child < len) { await tC(child, max); if (arr[child] > arr[max]) max = child; } } if (max !== i) { [arr[i], arr[max]] = [arr[max], arr[i]]; await tS(i, max); await hp(len, max); } }; for (let i = Math.floor(n/4); i >= 0; i--) await hp(n, i); for (let i = n - 1; i > 0; i--) { [arr[0], arr[i]] = [arr[i], arr[0]]; await tS(0, i); await hp(i, 0); } };
+                const smoothsort = async () => { await heapMax(); };
+                const splayTreeSort = async () => { class Node { constructor(v, idx) { this.v = v; this.idx = idx; this.l = null; this.r = null; } } let root = null; const insert = async (r, v, i) => { if (!r) return new Node(v, i); await tC(i, r.idx); if (v < r.v) r.l = await insert(r.l, v, i); else r.r = await insert(r.r, v, i); return r; }; for (let i = 0; i < arr.length; i++) root = await insert(root, arr[i], i); let idx = 0; const io = async (r) => { if (!r || stopSrt) return; await io(r.l); arr[idx] = r.v; await tS(idx, idx); idx++; await io(r.r); }; await io(root); };
+                const skewHeapSort = async () => { class Node { constructor(v, idx) { this.v = v; this.idx = idx; this.l = null; this.r = null; } } const merge = async (a, b) => { if (!a) return b; if (!b) return a; await tC(a.idx, b.idx); if (a.v > b.v) [a, b] = [b, a]; let temp = a.l; a.l = await merge(a.r, b); a.r = temp; return a; }; let root = null; for (let i = 0; i < arr.length; i++) root = await merge(root, new Node(arr[i], i)); for (let i = 0; i < arr.length; i++) { if (stopSrt) return; arr[i] = root.v; await tS(i, i); root = await merge(root.l, root.r); } };
+                const pairingHeapSort = async () => { class Node { constructor(v, idx) { this.v = v; this.idx = idx; this.sub = []; } } const merge = async (a, b) => { if (!a) return b; if (!b) return a; await tC(a.idx, b.idx); if (a.v < b.v) { a.sub.push(b); return a; } else { b.sub.push(a); return b; } }; const mergePairs = async (list) => { if (list.length === 0) return null; if (list.length === 1) return list[0]; let pairs = []; for (let i = 0; i < list.length; i += 2) { if (i + 1 < list.length) pairs.push(await merge(list[i], list[i+1])); else pairs.push(list[i]); } let res = pairs[pairs.length - 1]; for (let i = pairs.length - 2; i >= 0; i--) res = await merge(res, pairs[i]); return res; }; let root = null; for (let i = 0; i < arr.length; i++) root = await merge(root, new Node(arr[i], i)); for (let i = 0; i < arr.length; i++) { if (stopSrt) return; arr[i] = root.v; await tS(i, i); root = await mergePairs(root.sub); } };
+                const treapSort = async () => { class Node { constructor(v, idx) { this.v = v; this.idx = idx; this.p = Math.random(); this.l = null; this.r = null; } } const insert = async (r, v, i) => { if (!r) return new Node(v, i); await tC(i, r.idx); if (v < r.v) { r.l = await insert(r.l, v, i); if (r.l.p > r.p) { let temp = r.l; r.l = temp.r; temp.r = r; r = temp; } } else { r.r = await insert(r.r, v, i); if (r.r.p > r.p) { let temp = r.r; r.r = temp.l; temp.l = r; r = temp; } } return r; }; let root = null; for (let i = 0; i < arr.length; i++) root = await insert(root, arr[i], i); let idx = 0; const io = async (r) => { if (!r || stopSrt) return; await io(r.l); arr[idx] = r.v; await tS(idx, idx); idx++; await io(r.r); }; await io(root); };
+                const counting = async () => { let n = arr.length, max = Math.max(...arr), cnt = new Array(max + 1).fill(0); for (let i = 0; i < n; i++) { await tC(i, i); cnt[arr[i]]++; } let idx = 0; for (let i = 0; i <= max; i++) { while (cnt[i] > 0) { arr[idx] = i; await tS(idx, idx); idx++; cnt[i]--; } } };
+                const bucket = async () => { let n = arr.length, max = Math.max(...arr), numB = Math.floor(Math.sqrt(n)), bkts = Array.from({length: numB}, () => []); for (let i = 0; i < n; i++) { await tC(i, i); let bIdx = Math.min(numB - 1, Math.floor((arr[i] / (max + 1)) * numB)); bkts[bIdx].push(arr[i]); } let idx = 0; for (let b = 0; b < numB; b++) { await helperInsertSort(bkts[b], idx); for (let v of bkts[b]) { arr[idx] = v; await tS(idx, idx); idx++; } } };
+                const radixLSD = async () => { let max = Math.max(...arr), b = parseInt(rb.value); for (let exp = 1; Math.floor(max / exp) > 0; exp *= b) { let output = new Array(arr.length), cnt = new Array(b).fill(0); for (let i = 0; i < arr.length; i++) { await tC(i, i); cnt[Math.floor(arr[i] / exp) % b]++; } for (let i = 1; i < b; i++) cnt[i] += cnt[i - 1]; for (let i = arr.length - 1; i >= 0; i--) { let digit = Math.floor(arr[i] / exp) % b; output[cnt[digit] - 1] = arr[i]; cnt[digit]--; } for (let i = 0; i < arr.length; i++) { arr[i] = output[i]; await tS(i, i); } } };
+                const radixMSD = async () => { const msd = async (l, r, exp, base) => { if (l >= r || exp <= 0) return; let cnt = new Array(base + 1).fill(0), out = new Array(r - l + 1); for (let i = l; i <= r; i++) { await tC(i, i); cnt[Math.floor(arr[i] / exp) % base + 1]++; } for (let i = 1; i <= base; i++) cnt[i] += cnt[i - 1]; for (let i = l; i <= r; i++) { let d = Math.floor(arr[i] / exp) % base; out[cnt[d]++] = arr[i]; } for (let i = 0; i < out.length; i++) { arr[l + i] = out[i]; await tS(l + i, l + i); } for (let i = 0; i < base; i++) { let sl = (i === 0) ? l : l + cnt[i - 1], sr = l + cnt[i] - 1; if (sl < sr) await msd(sl, sr, Math.floor(exp / base), base); } }; let max = Math.max(...arr), base = parseInt(rb.value), exp = 1; while (Math.floor(max / exp) >= base) exp *= base; await msd(0, arr.length - 1, exp, base); };
+                const gravity = async () => { let n = arr.length, maxVal = Math.max(...arr), beads = Array.from({length: n}, () => new Uint8Array(maxVal + 1)); for (let i = 0; i < n; i++) for (let j = 0; j < arr[i]; j++) beads[i][j] = 1; for (let j = 0; j < maxVal; j++) { let sum = 0; for (let i = 0; i < n; i++) { if (stopSrt) return; await tC(i, i); sum += beads[i][j]; beads[i][j] = 0; } for (let i = n - sum; i < n; i++) beads[i][j] = 1; } for (let i = 0; i < n; i++) { let val = 0; for (let j = 0; j < maxVal; j++) val += beads[i][j]; arr[i] = val; await tS(i, i); } };
+                const pigeonholeSort = async () => { let min = Math.min(...arr), max = Math.max(...arr), range = max - min + 1, holes = Array.from({length: range}, () => []); for (let i = 0; i < arr.length; i++) { await tC(i, i); holes[arr[i] - min].push(arr[i]); } let idx = 0; for (let h = 0; h < range; h++) { for (let v of holes[h]) { arr[idx] = v; await tS(idx, idx); idx++; } } };
+                const flashsort = async () => { let n = arr.length, m = Math.floor(0.43 * n), min = Math.min(...arr), maxIdx = 0; for (let i = 1; i < n; i++) { await tC(i, maxIdx); if (arr[i] > arr[maxIdx]) maxIdx = i; } if (arr[maxIdx] === min) return; let c1 = (m - 1) / (arr[maxIdx] - min), L = new Array(m).fill(0); for (let i = 0; i < n; i++) L[Math.floor(c1 * (arr[i] - min))]++; for (let k = 1; k < m; k++) L[k] += L[k - 1]; let count = 0, j = 0, k = m - 1; while (count < n - 1) { while (j > L[k] - 1) { j++; k = Math.floor(c1 * (arr[j] - min)); } let ev = arr[j]; while (j !== L[k]) { k = Math.floor(c1 * (ev - min)); let hold = arr[L[k] - 1]; arr[L[k] - 1] = ev; await tS(L[k] - 1, j); ev = hold; L[k]--; count++; } } await insert(0, n - 1); };
+                const americanFlagSort = async () => { await radixMSD(); };
+                const interpolationSort = async () => { let n = arr.length, min = Math.min(...arr), max = Math.max(...arr); if (min === max) return; let buckets = Array.from({length: n}, () => []); for (let i = 0; i < n; i++) { await tC(i, i); let b = Math.floor(((arr[i] - min) / (max - min)) * (n - 1)); buckets[b].push(arr[i]); } let idx = 0; for (let b = 0; b < n; b++) { await helperInsertSort(buckets[b], idx); for (let v of buckets[b]) { arr[idx] = v; await tS(idx, idx); idx++; } } };
+                const proxmapSort = async () => { let n = arr.length, min = Math.min(...arr), max = Math.max(...arr); if (min === max) return; let mapKey = new Array(n), hitCount = new Array(n).fill(0); for (let i = 0; i < n; i++) { mapKey[i] = Math.floor(((arr[i] - min) / (max - min)) * (n - 1)); hitCount[mapKey[i]]++; } let proxMap = new Array(n); proxMap[0] = 0; for (let i = 1; i < n; i++) proxMap[i] = proxMap[i - 1] + hitCount[i - 1]; let temp = new Array(n).fill(-1); for (let i = 0; i < n; i++) { let v = arr[i], p = proxMap[mapKey[i]]; while (temp[p] !== -1 && temp[p] <= v) { await tC(i, p); p++; } let insertP = p; while (temp[insertP] !== -1) { await tC(i, insertP); insertP++; } for (let j = insertP; j > p; j--) temp[j] = temp[j - 1]; temp[p] = v; } for (let i = 0; i < n; i++) { arr[i] = temp[i]; await tS(i, i); } };
+                const spreadsort = async () => { let n = arr.length, min = Math.min(...arr), max = Math.max(...arr); if (min === max) return; let bins = Array.from({length: n}, () => []); for (let i = 0; i < n; i++) { await tC(i, i); let b = Math.floor(((arr[i] - min) / (max - min)) * (n - 1)); bins[b].push(arr[i]); } let idx = 0; for (let b = 0; b < n; b++) { await helperInsertSort(bins[b], idx); for (let v of bins[b]) { arr[idx] = v; await tS(idx, idx); idx++; } } };
+                const bitonicSort = async () => { const compAndSwap = async (i, j, dir) => { await tC(i, j); if ((dir === 1 && arr[i] > arr[j]) || (dir === 0 && arr[i] < arr[j])) { [arr[i], arr[j]] = [arr[j], arr[i]]; await tS(i, j); } }; const bitonicMerge = async (low, cnt, dir) => { if (cnt > 1 && !stopSrt) { let k = Math.floor(cnt / 2); for (let i = low; i < low + k; i++) await compAndSwap(i, i + k, dir); await bitonicMerge(low, k, dir); await bitonicMerge(low + k, k, dir); } }; const bitonicSortRec = async (low, cnt, dir) => { if (cnt > 1 && !stopSrt) { let k = Math.floor(cnt / 2); await bitonicSortRec(low, k, 1); await bitonicSortRec(low + k, k, 0); await bitonicMerge(low, cnt, dir); } }; await bitonicSortRec(0, arr.length, 1); };
+                const oddEvenMergeSort = async () => { const compare = async (i, j) => { await tC(i, j); if (arr[i] > arr[j]) { [arr[i], arr[j]] = [arr[j], arr[i]]; await tS(i, j); } }; const oddEvenMerge = async (lo, n, r) => { let step = r * 2; if (step < n) { await oddEvenMerge(lo, n, step); await oddEvenMerge(lo + r, n, step); for (let i = lo + r; i + r < lo + n; i += step) await compare(i, i + r); } else await compare(lo, lo + r); }; const oddEvenMergeSortRec = async (lo, n) => { if (n > 1) { let m = Math.floor(n / 2); await oddEvenMergeSortRec(lo, m); await oddEvenMergeSortRec(lo + m, m); await oddEvenMerge(lo, n, 1); } }; await oddEvenMergeSortRec(0, arr.length); };
+                const pairwiseSortingNetwork = async () => { const compare = async (i, j) => { await tC(i, j); if (arr[i] > arr[j]) { [arr[i], arr[j]] = [arr[j], arr[i]]; await tS(i, j); } }; const pairwise = async (n, a, b) => { if (a === b) return; if (b === a + 1) { await compare(a, b); return; } let m = Math.floor((a + b) / 2); await pairwise(n, a, m); await pairwise(n, m + 1, b); }; await pairwise(arr.length, 0, arr.length - 1); };
+                const shearSort = async () => { let n = arr.length, rows = Math.floor(Math.sqrt(n)), cols = Math.ceil(n / rows); for (let k = 0; k < Math.ceil(Math.log2(n)) + 1; k++) { for (let r = 0; r < rows; r++) { let rowArr = []; for (let c = 0; c < cols && r * cols + c < n; c++) rowArr.push({ v: arr[r * cols + c], origIdx: r * cols + c }); for (let i = 0; i < rowArr.length; i++) { for (let j = 0; j < rowArr.length - 1; j++) { await tC(rowArr[j].origIdx, rowArr[j+1].origIdx); let cond = (r % 2 === 0) ? rowArr[j].v > rowArr[j+1].v : rowArr[j].v < rowArr[j+1].v; if (cond) { [rowArr[j], rowArr[j+1]] = [rowArr[j+1], rowArr[j]]; } } } for (let c = 0; c < rowArr.length; c++) { arr[r * cols + c] = rowArr[c].v; await tS(r * cols + c, r * cols + c); } } for (let c = 0; c < cols; c++) { let colArr = []; for (let r = 0; r < rows && r * cols + c < n; r++) colArr.push({ v: arr[r * cols + c], origIdx: r * cols + c }); for (let i = 0; i < colArr.length; i++) { for (let j = 0; j < colArr.length - 1; j++) { await tC(colArr[j].origIdx, colArr[j+1].origIdx); if (colArr[j].v > colArr[j+1].v) { [colArr[j], colArr[j+1]] = [colArr[j+1], colArr[j]]; } } } for (let r = 0; r < colArr.length; r++) { arr[r * cols + c] = colArr[r].v; await tS(r * cols + c, r * cols + c); } } } };
+                const boseNelsonSort = async () => { const compare = async (i, j) => { await tC(i, j); if (arr[i] > arr[j]) { [arr[i], arr[j]] = [arr[j], arr[i]]; await tS(i, j); } }; const boseNelson = async (i, j) => { if (j === 1) return; let k = Math.floor(j / 2); await boseNelson(i, k); await boseNelson(i + k, j - k); for (let l = 0; l < k; l++) if (i + l + k < arr.length) await compare(i + l, i + l + k); }; await boseNelson(0, arr.length); };
+                const bogo = async () => { while (!stopSrt) { let sorted = true; for (let i = 0; i < arr.length - 1; i++) { await tC(i, i + 1); if (arr[i] > arr[i + 1]) { sorted = false; break; } } if (sorted) break; for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; await tS(i, j); } } };
+                const bogoImprovised = async () => { while (!stopSrt) { let sorted = true; for (let i = 0; i < arr.length - 1; i++) { await tC(i, i + 1); if (arr[i] > arr[i + 1]) { sorted = false; break; } } if (sorted) break; const i = Math.floor(Math.random() * arr.length), j = Math.floor(Math.random() * arr.length); [arr[i], arr[j]] = [arr[j], arr[i]]; await tS(i, j); } };
+                const bozo = async () => { while (!stopSrt) { let sorted = true; for (let i = 0; i < arr.length - 1; i++) { await tC(i, i + 1); if (arr[i] > arr[i + 1]) { sorted = false; break; } } if (sorted) break; const i = Math.floor(Math.random() * arr.length), j = Math.floor(Math.random() * arr.length); [arr[i], arr[j]] = [arr[j], arr[i]]; await tS(i, j); } };
+                const slowsort = async () => { const ss = async (i, j) => { if (i >= j || stopSrt) return; let m = Math.floor((i + j) / 2); await ss(i, m); await ss(m + 1, j); await tC(m, j); if (arr[m] > arr[j]) { [arr[m], arr[j]] = [arr[j], arr[m]]; await tS(m, j); } await ss(i, j - 1); }; await ss(0, arr.length - 1); };
+                const sleepSort = async () => { let copy = [...arr], idx = 0; for (let i = 0; i < copy.length; i++) { for (let j = i + 1; j < copy.length; j++) { await tC(i, j); if (copy[i] > copy[j]) [copy[i], copy[j]] = [copy[j], copy[i]]; } } for (let v of copy) { if (stopSrt) return; arr[idx] = v; await tS(idx, idx); idx++; } };
+                const quantumBogo = async () => { await bogo(); };
+                const miracleSort = async () => { for (let i = 0; i < arr.length - 1; i++) await tC(i, i + 1); };
+                const stalin = async () => { if (arr.length <= 1) return; let maxSeen = arr[0], i = 1; while (i < arr.length) { if (stopSrt) return; await tC(i - 1, i); if (arr[i] < maxSeen) { arr.splice(i, 1); await tS(i, i); } else { maxSeen = arr[i]; i++; } } };
+                const stalinSelective = async () => { let maxSeen = arr[0], i = 1; while (i < arr.length) { if (stopSrt) return; await tC(i - 1, i); if (arr[i] < maxSeen && Math.random() < 0.5) { arr.splice(i, 1); await tS(i, i); } else { maxSeen = Math.max(maxSeen, arr[i]); i++; } } };
+                const stalinGulag = async () => { let maxSeen = arr[0], i = 1, moved = 0; while (i < arr.length - moved) { if (stopSrt) return; await tC(i - 1, i); if (arr[i] < maxSeen) { let val = arr.splice(i, 1)[0]; arr.push(val); await tS(i, arr.length - 1); moved++; } else { maxSeen = arr[i]; i++; } } };
+                const intelligentDesignSort = async () => { for (let i = 0; i < arr.length; i++) { if (stopSrt) return; await tC(i, i); } };
+
+                if (a === 'b') { if (v === 'std') await bubble(); else if (v === 'cocktail') await cocktail(); else if (v === 'comb') await comb(); else await stooge(); }
+                else if (a === 'gn') { if (v === 'std') await gnome(); else if (v === 'optimized') await gnomeOptimized(); else if (v === 'quick') await gnomeQuick(); else await gnomeDouble(); }
+                else if (a === 'oe') await oddEven();
+                else if (a === 'crc') await circleSort();
+                else if (a === 's') { if (v === 'std') await selection(); else await doubleSelection(); }
+                else if (a === 'i') { if (v === 'std') await insert(0, arr.length - 1); else if (v === 'shell') await shell(); else if (v === 'ciura') await ciuraShellSort(); else if (v === 'binary') await binaryInsert(); else await librarySort(); }
+                else if (a === 'cyc') await cycle(); else if (a === 'pnk') await pancake(); else if (a === 'bingo') await bingoSort(); else if (a === 'patience') await patienceSort(); else if (a === 'tree') await treeSort();
+                else if (a === 'tourn') await tournamentSort();
+                else if (a === 'q') { if (v === 'std') await quick(); else if (v === 'dual') await dualQuick(); else await quick3Way(); }
+                else if (a === 'm') { if (v === 'out') await mergeOut(); else if (v === 'iter') await mergeIter(); else if (v === 'inplace') await mergeInP(); else if (v === 'weave') await mergeWeave(); else await timSort(); }
+                else if (a === 'strand') await strandSort();
+                else if (a === 'quad') await quadSort();
+                else if (a === 'drop') await dropMergeSort();
+                else if (a === 'natmerge') await naturalMergeSort();
+                else if (a === 'h') { if (v === 'max') await heapMax(); else if (v === 'min') await heapMin(); else await ternaryHeap(); }
+                else if (a === 'weakheap') await quaternaryHeapSort();
+                else if (a === 'smooth') await smoothsort();
+                else if (a === 'splay') await splayTreeSort();
+                else if (a === 'skewheap') await skewHeapSort();
+                else if (a === 'pairing') await pairingHeapSort();
+                else if (a === 'treapsort') await treapSort();
+                else if (a === 'cnt') await counting(); else if (a === 'bkt') await bucket(); else if (a === 'r') { if (v === 'lsd') await radixLSD(); else if (v === 'msd') await radixMSD(); }
+                else if (a === 'g') await gravity(); else if (a === 'pigeon') await pigeonholeSort(); else if (a === 'flash') await flashsort(); else if (a === 'flag') await americanFlagSort();
+                else if (a === 'interp') await interpolationSort();
+                else if (a === 'prox') await proxmapSort();
+                else if (a === 'spread') await spreadsort();
+                else if (a === 'bit') await bitonicSort(); else if (a === 'oem') await oddEvenMergeSort(); else if (a === 'pw') await pairwiseSortingNetwork();
+                else if (a === 'shear') await shearSort();
+                else if (a === 'bosenelson') await boseNelsonSort();
+                else if (a === 'bg') { if (v === 'std') await bogo(); else if (v === 'imp') await bogoImprovised(); else if (v === 'bozo') await bozo(); else if (v === 'slow') await slowsort(); else if (v === 'sleep') await sleepSort(); else if (v === 'quantumbogo') await quantumBogo(); else await miracleSort(); }
+                else if (a === 'st') { if (v === 'std') await stalin(); else if (v === 'selective') await stalinSelective(); else await stalinGulag(); }
+                else if (a === 'intdes') await intelligentDesignSort();
+
+                this.upStats();
+                this.rndr();
+
+                if (!stopSrt) {
+                    this.statusMode = "vf"; const delayPerItem = Math.max(1, 1000 / this.arr.length);
+                    for (let i = 0; i < this.arr.length; i++) {
+                        if (stopSrt) break; this.verifiedIdx = i; this.active = [i];
+                        if (performance.now() - this.lastRenderTime > 16 || delayPerItem >= 10) this.rndr();
+                        playTone(this.arr[i], i, instances.length); await new Promise(r => setTimeout(r, delayPerItem));
+                    }
+                    this.statusMode = "done";
+                }
+                this.active = []; this.verifiedIdx = -1; this.rndr(); this.upStats();
+            }
+        }
+
+        function createInstances() {
+            container.innerHTML = "";
+            instances = [];
+            let count = parseInt(viewMode.value) || 1;
+            if (count < 1) count = 1;
+
+            if (count === 1) {
+                container.className = 'canvas-container single-view';
+                singleAlgControls.style.display = 'inline-flex';
+                singleStats.style.display = 'inline-flex';
+                instances.push(new SortInstance(0, container, false));
+            } else {
+                container.className = 'canvas-container';
+                singleAlgControls.style.display = 'none';
+                singleStats.style.display = 'none';
+
+                // Calculate dynamically fitting grid columns and rows to fit screen size
+                const cols = Math.ceil(Math.sqrt(count));
+                const rows = Math.ceil(count / cols);
+                
+                container.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+                container.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+
+                for (let i = 0; i < count; i++) {
+                    instances.push(new SortInstance(i, container, true));
+                }
+            }
+            init();
+        }
+
+        function resizeAllCanvases() {
+            instances.forEach(inst => inst.resizeCanvas());
+        }
+
+        window.addEventListener('resize', resizeAllCanvases);
+
+        fsBtn.addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.error(`Error attempting to enable fullscreen: ${err.message}`);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        });
+
+        document.addEventListener('fullscreenchange', () => {
+            fsBtn.textContent = document.fullscreenElement ? "Exit Fullscreen" : "Fullscreen";
+            setTimeout(resizeAllCanvases, 50);
+        });
 
         const MUSICAL_SCALES = {
             pentatonic: [0, 2, 4, 7, 9],
@@ -208,7 +771,7 @@
             return 440 * Math.pow(2, (midiNote - 69) / 12);
         }
 
-        function playTone(v, index = 0) {
+        function playTone(v, index = 0, instanceCount = 1) {
             try {
                 if (getDelay() <= 1 && Math.random() > 0.25) return;
                 initAudio();
@@ -225,9 +788,11 @@
 
                 const attack = 0.003;
                 const decay = Math.max(0.02, Math.min(0.08, getDelay() / 1000 * 2));
+                
+                const gainMult = 1 / Math.sqrt(instanceCount);
 
                 noteGain.gain.setValueAtTime(0, now);
-                noteGain.gain.linearRampToValueAtTime(1, now + attack);
+                noteGain.gain.linearRampToValueAtTime(gainMult, now + attack);
                 noteGain.gain.exponentialRampToValueAtTime(0.0001, now + attack + decay);
 
                 if (panMode.value === 'stereo' && audioCtx.createStereoPanner) {
@@ -247,53 +812,7 @@
             } catch(e) {}
         }
 
-        const variants = {
-            b: [{v:"std",n:"Standard Bubble"}, {v:"cocktail",n:"Cocktail Shaker"}, {v:"comb",n:"Comb Sort"}, {v:"stooge",n:"Stooge Sort"}],
-            gn: [{v:"std",n:"Standard Gnome"}, {v:"optimized",n:"Optimized Gnome"}, {v:"quick",n:"Quick Gnome"}, {v:"double",n:"Double Gnome"}],
-            oe: [{v:"std",n:"Odd-Even Brick"}],
-            crc: [{v:"std",n:"Circle Sort"}],
-            s: [{v:"std",n:"Standard Selection"}, {v:"double",n:"Double Selection"}],
-            i: [{v:"std",n:"Standard Insertion"}, {v:"shell",n:"Shell Sort"}, {v:"ciura",n:"Ciura-Gap Shell Sort"}, {v:"binary",n:"Binary Insertion Sort"}, {v:"library",n:"Library Sort (Gapped)"}],
-            cyc: [{v:"std",n:"Standard Cycle Sort"}],
-            pnk: [{v:"std",n:"Standard Pancake Sort"}],
-            bingo: [{v:"std",n:"Bingo Sort"}],
-            patience: [{v:"std",n:"Patience Sort"}],
-            tree: [{v:"std",n:"BST Insertion & In-Order"}],
-            tourn: [{v:"std",n:"Tournament / Tree Selection"}],
-            q: [{v:"std",n:"Single-Pivot Quick"}, {v:"dual",n:"Dual-Pivot Quick"}, {v:"3way",n:"3-Way Partition (Dutch Flag)"}],
-            m: [{v:"out",n:"Out-of-Place Merge"}, {v:"iter",n:"Bottom-Up Merge"}, {v:"inplace",n:"In-Place Merge"}, {v:"weave",n:"Weave Merge"}, {v:"tim",n:"Tim Sort"}],
-            strand: [{v:"std",n:"Strand Sort"}],
-            quad: [{v:"std",n:"Quadsort"}],
-            drop: [{v:"std",n:"Drop-Merge Sort"}],
-            natmerge: [{v:"std",n:"Natural Merge Sort"}],
-            h: [{v:"max",n:"Max Heap Sort"}, {v:"min",n:"Min Heap Sort"}, {v:"ternary",n:"Ternary Heap Sort"}],
-            weakheap: [{v:"std",n:"4-ary Quaternary Heap"}],
-            smooth: [{v:"std",n:"Smoothsort (Leonardo Heap)"}],
-            splay: [{v:"std",n:"Splay Tree Sort"}],
-            skewheap: [{v:"std",n:"Skew Heap Sort"}],
-            pairing: [{v:"std",n:"Pairing Heap Sort"}],
-            treapsort: [{v:"std",n:"Treap Sort"}],
-            cnt: [{v:"std",n:"Counting Sort"}],
-            bkt: [{v:"std",n:"Bucket Sort"}],
-            r: [{v:"lsd",n:"Radix LSD"}, {v:"msd",n:"Radix MSD"}],
-            g: [{v:"std",n:"Gravity (Bead) Sort"}],
-            pigeon: [{v:"std",n:"Pigeonhole Sort"}],
-            flash: [{v:"std",n:"Flashsort"}],
-            flag: [{v:"std",n:"American Flag Sort"}],
-            interp: [{v:"std",n:"Interpolation Sort"}],
-            prox: [{v:"std",n:"Proxmap Sort"}],
-            spread: [{v:"std",n:"Spreadsort"}],
-            bit: [{v:"std",n:"Bitonic Sort"}],
-            oem: [{v:"std",n:"Odd-Even Mergesort"}],
-            pw: [{v:"std",n:"Pairwise Sorting Network"}],
-            shear: [{v:"std",n:"Shear Sort (2D Mesh)"}],
-            bosenelson: [{v:"std",n:"Bose-Nelson Network"}],
-            bg: [{v:"std",n:"Standard Bogo"}, {v:"imp",n:"Improvised Bogo"}, {v:"bozo",n:"Bozo Sort"}, {v:"slow",n:"Slowsort"}, {v:"sleep",n:"Sleep Sort"}, {v:"quantumbogo",n:"Quantum Bogo Sort"}, {v:"miracle",n:"Miracle Sort (Hope)"}],
-            st: [{v:"std",n:"Purge All (Strict)"}, {v:"selective",n:"Selective Purge (50%)"}, {v:"gulag",n:"Send to Back (Exile)"}],
-            intdes: [{v:"std",n:"Intelligent Design Sort"}]
-        };
-
-        function updateVariants() {
+        function updateSingleVariants() {
             varSelect.innerHTML = "";
             const key = alg.value;
             if (variants[key]) {
@@ -336,59 +855,80 @@
             return a;
         }
 
+        const getDelay = () => parseFloat(spd.value);
+
         function init() {
-            arr = makeArray(arrType.value, parseInt(sz.value));
-            active = []; totalComps = totalSwaps = opsCount = 0; verifiedIdx = -1; statusMode = "";
-            compCount.textContent = swapCount.textContent = 0; rndr();
+            baseArray = makeArray(arrType.value, parseInt(sz.value));
+            instances.forEach(inst => inst.reset(baseArray));
         }
-
-        const getDelay = () => parseFloat(spd.value), upStats = () => { compCount.textContent = totalComps; swapCount.textContent = totalSwaps; };
-
-        const col = (v, i) => {
-            if (statusMode === "vf") {
-                if (i <= verifiedIdx) return '#2ea043';
-            }
-            if (active.includes(i)) {
-                return statusMode === "sw" ? '#ffffff' : '#f85149';
-            }
-            return clr.value === 'white' ? '#e6edf3' : `hsl(${(v/parseInt(sz.value))*360},100%,50%)`;
-        };
 
         shf.addEventListener('click', async () => {
             if (isSrt) { stopSrt = true; isPaused = false; pse.textContent = "Pause"; pse.disabled = true; return; }
-            toggleUI(true); isSrt = true; totalSwaps = totalComps = 0; statusMode = "sw";
+            toggleUI(true); isSrt = true;
             const type = arrType.value, n = parseInt(sz.value);
 
+            let tempArr = [];
             if (type === "random") {
-                arr = Array.from({length: n}, (_, i) => i);
+                tempArr = Array.from({length: n}, (_, i) => i);
                 for (let i = n - 1; i > 0; i--) {
                     if (stopSrt) break;
-                    const j = Math.floor(Math.random() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; active = [i, j]; totalSwaps++;
-                    if (performance.now() - lastRenderTime > 16 || getDelay() >= 10) { rndr(); upStats(); lastRenderTime = performance.now(); }
-                    if (arr[i] !== undefined) playTone(arr[i], i); await zeroYield();
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [tempArr[i], tempArr[j]] = [tempArr[j], tempArr[i]];
+                    instances.forEach(inst => {
+                        inst.arr = [...tempArr];
+                        inst.active = [i, j];
+                        inst.statusMode = "sw";
+                        inst.rndr();
+                    });
+                    if (tempArr[i] !== undefined) playTone(tempArr[i], i, instances.length);
+                    await zeroYield();
                 }
             } else {
                 const target = makeArray(type, n);
-                arr = new Array(n);
+                tempArr = new Array(n);
                 for (let i = 0; i < n; i++) {
                     if (stopSrt) break;
-                    arr[i] = target[i]; active = [i]; totalSwaps++;
-                    if (performance.now() - lastRenderTime > 16 || getDelay() >= 10) { rndr(); upStats(); lastRenderTime = performance.now(); }
-                    if (arr[i] !== undefined) playTone(arr[i], i); await zeroYield();
+                    tempArr[i] = target[i];
+                    instances.forEach(inst => {
+                        inst.arr = [...tempArr];
+                        inst.active = [i];
+                        inst.statusMode = "sw";
+                        inst.rndr();
+                    });
+                    if (tempArr[i] !== undefined) playTone(tempArr[i], i, instances.length);
+                    await zeroYield();
                 }
             }
-            isSrt = stopSrt = false; active = []; totalSwaps = totalComps = 0; upStats(); statusMode = ""; rndr(); toggleUI(false);
+            baseArray = tempArr;
+            isSrt = stopSrt = false;
+            instances.forEach(inst => {
+                inst.active = [];
+                inst.statusMode = "";
+                inst.reset(baseArray);
+            });
+            toggleUI(false);
         });
 
         pse.addEventListener('click', () => {
             if (!isSrt) return;
             isPaused = !isPaused;
             pse.textContent = isPaused ? "Resume" : "Pause";
-            alg.disabled = !isPaused; varSelect.disabled = !isPaused;
+            alg.disabled = !isPaused; varSelect.disabled = !isPaused; viewMode.disabled = !isPaused;
+            instances.forEach(inst => {
+                if (inst.isGrid) {
+                    inst.dom.algSel.disabled = !isPaused;
+                    inst.dom.varSel.disabled = !isPaused;
+                }
+            });
+        });
+
+        viewMode.addEventListener('input', () => {
+            if (isSrt) { stopSrt = true; isPaused = false; pse.textContent = "Pause"; pse.disabled = true; }
+            createInstances();
         });
 
         alg.addEventListener('change', () => {
-            updateVariants();
+            updateSingleVariants();
             if (isSrt && isPaused) { stopSrt = true; isPaused = false; pse.textContent = "Pause"; pse.disabled = true; }
         });
 
@@ -396,7 +936,8 @@
             if (isSrt && isPaused) { stopSrt = true; isPaused = false; pse.textContent = "Pause"; pse.disabled = true; }
         });
 
-        md.addEventListener('change', rndr); clr.addEventListener('change', rndr);
+        md.addEventListener('change', () => instances.forEach(i => i.rndr()));
+        clr.addEventListener('change', () => instances.forEach(i => i.rndr()));
         arrType.addEventListener('change', () => { if (!isSrt) init(); });
         sz.addEventListener('input', (e) => { szv.textContent = e.target.value; init(); });
         spd.addEventListener('input', (e) => spdv.textContent = e.target.value);
@@ -412,151 +953,30 @@
             return new Promise(r => setTimeout(r, getDelay()));
         };
 
-        async function tC(i, j) { totalComps++; active = [i, j]; statusMode = "cp"; if (performance.now() - lastRenderTime > 16 || getDelay() > 1) { rndr(); upStats(); lastRenderTime = performance.now(); } if (arr[i] !== undefined) playTone(arr[i], i); await sleep(); }
-        async function tS(i, j) { totalSwaps++; active = [i, j]; statusMode = "sw"; if (performance.now() - lastRenderTime > 16 || getDelay() > 1) { rndr(); upStats(); lastRenderTime = performance.now(); } if (arr[i] !== undefined) playTone(arr[i], i); await sleep(); }
-
-        function rndr() {
-            ctx.clearRect(0, 0, cv.width, cv.height);
-            const m = md.value, len = arr.length, cX = cv.width/2, cY = cv.height/2, r = Math.min(cv.width, cv.height)/2 - 15;
-            for (let i = 0; i < len; i++) {
-                ctx.fillStyle = col(arr[i], i);
-                if (m === 'cc') { ctx.beginPath(); ctx.moveTo(cX, cY); ctx.arc(cX, cY, r, i*(2*Math.PI)/len - Math.PI/2, (i+1)*(2*Math.PI)/len - Math.PI/2); ctx.fill(); }
-                else if (m === 'cl') { const w = cv.width/len, h = ((arr[i]+1)/parseInt(sz.value))*(cv.height-20); ctx.fillRect(i*w, cv.height-h, Math.max(0.5, w), h); }
-                else if (m === 'pyr') { const w = cv.width/len, h = ((arr[i]+1)/parseInt(sz.value))*(cv.height-20)/2; ctx.fillRect(i*w, cY - h, Math.max(0.5, w), h * 2); }
-                else if (m === 'dt') { const s = cv.width/len, x = i*s + s/2, y = cv.height - (((arr[i]+1)/parseInt(sz.value))*(cv.height-40)) - 20; ctx.beginPath(); ctx.arc(x, y, Math.max(1, Math.min(6, 300/len)), 0, 2*Math.PI); ctx.fill(); }
-                else if (m === 'dc') { const d = ((arr[i]+1)/parseInt(sz.value))*r, a = i*(2*Math.PI)/len - Math.PI/2; ctx.beginPath(); ctx.arc(cX + d*Math.cos(a), cY + d*Math.sin(a), Math.max(1, Math.min(5, 250/len)), 0, 2*Math.PI); ctx.fill(); }
-                else if (m === 'stb') { const d = ((arr[i]+1)/parseInt(sz.value))*r, a = i*(2*Math.PI)/len - Math.PI/2; ctx.beginPath(); ctx.moveTo(cX, cY); ctx.lineTo(cX + d*Math.cos(a), cY + d*Math.sin(a)); ctx.strokeStyle = col(arr[i], i); ctx.lineWidth = Math.max(1, (2*Math.PI*r)/len); ctx.stroke(); }
-            }
-        }
-
         function toggleUI(d) {
-            srt.disabled = shf.disabled = sz.disabled = rb.disabled = arrType.disabled = d;
+            srt.disabled = shf.disabled = sz.disabled = rb.disabled = arrType.disabled = viewMode.disabled = d;
             alg.disabled = varSelect.disabled = d && !isPaused;
             pse.disabled = !d;
+            instances.forEach(inst => {
+                if (inst.isGrid) {
+                    inst.dom.algSel.disabled = d && !isPaused;
+                    inst.dom.varSel.disabled = d && !isPaused;
+                }
+            });
         }
 
         srt.addEventListener('click', async () => {
-            if (isSrt) return; isSrt = true; isPaused = false; pse.textContent = "Pause"; toggleUI(true); totalComps = totalSwaps = opsCount = 0; const a = alg.value, v = varSelect.value;
+            if (isSrt) return; isSrt = true; isPaused = false; pse.textContent = "Pause"; toggleUI(true); opsCount = 0;
             
-            if (a === 'b') { if (v === 'std') await bubble(); else if (v === 'cocktail') await cocktail(); else if (v === 'comb') await comb(); else await stooge(); }
-            else if (a === 'gn') { if (v === 'std') await gnome(); else if (v === 'optimized') await gnomeOptimized(); else if (v === 'quick') await gnomeQuick(); else await gnomeDouble(); }
-            else if (a === 'oe') await oddEven();
-            else if (a === 'crc') await circleSort();
-            else if (a === 's') { if (v === 'std') await selection(); else await doubleSelection(); }
-            else if (a === 'i') { if (v === 'std') await insert(0, arr.length - 1); else if (v === 'shell') await shell(); else if (v === 'ciura') await ciuraShellSort(); else if (v === 'binary') await binaryInsert(); else await librarySort(); }
-            else if (a === 'cyc') await cycle(); else if (a === 'pnk') await pancake(); else if (a === 'bingo') await bingoSort(); else if (a === 'patience') await patienceSort(); else if (a === 'tree') await treeSort();
-            else if (a === 'tourn') await tournamentSort();
-            else if (a === 'q') { if (v === 'std') await quick(); else if (v === 'dual') await dualQuick(); else await quick3Way(); }
-            else if (a === 'm') { if (v === 'out') await mergeOut(); else if (v === 'iter') await mergeIter(); else if (v === 'inplace') await mergeInP(); else if (v === 'weave') await mergeWeave(); else await timSort(); }
-            else if (a === 'strand') await strandSort();
-            else if (a === 'quad') await quadSort();
-            else if (a === 'drop') await dropMergeSort();
-            else if (a === 'natmerge') await naturalMergeSort();
-            else if (a === 'h') { if (v === 'max') await heapMax(); else if (v === 'min') await heapMin(); else await ternaryHeap(); }
-            else if (a === 'weakheap') await quaternaryHeapSort();
-            else if (a === 'smooth') await smoothsort();
-            else if (a === 'splay') await splayTreeSort();
-            else if (a === 'skewheap') await skewHeapSort();
-            else if (a === 'pairing') await pairingHeapSort();
-            else if (a === 'treapsort') await treapSort();
-            else if (a === 'cnt') await counting(); else if (a === 'bkt') await bucket(); else if (a === 'r') { if (v === 'lsd') await radixLSD(); else if (v === 'msd') await radixMSD(); }
-            else if (a === 'g') await gravity(); else if (a === 'pigeon') await pigeonholeSort(); else if (a === 'flash') await flashsort(); else if (a === 'flag') await americanFlagSort();
-            else if (a === 'interp') await interpolationSort();
-            else if (a === 'prox') await proxmapSort();
-            else if (a === 'spread') await spreadsort();
-            else if (a === 'bit') await bitonicSort(); else if (a === 'oem') await oddEvenMergeSort(); else if (a === 'pw') await pairwiseSortingNetwork();
-            else if (a === 'shear') await shearSort();
-            else if (a === 'bosenelson') await boseNelsonSort();
-            else if (a === 'bg') { if (v === 'std') await bogo(); else if (v === 'imp') await bogoImprovised(); else if (v === 'bozo') await bozo(); else if (v === 'slow') await slowsort(); else if (v === 'sleep') await sleepSort(); else if (v === 'quantumbogo') await quantumBogo(); else await miracleSort(); }
-            else if (a === 'st') { if (v === 'std') await stalin(); else if (v === 'selective') await stalinSelective(); else await stalinGulag(); }
-            else if (a === 'intdes') await intelligentDesignSort();
+            const promises = instances.map(inst => inst.runAlgorithm());
+            await Promise.all(promises);
 
-            if (!stopSrt) {
-                statusMode = "vf"; const delayPerItem = Math.max(1, 1000 / arr.length);
-                for (let i = 0; i < arr.length; i++) {
-                    if (stopSrt) break; verifiedIdx = i; active = [i];
-                    if (performance.now() - lastRenderTime > 16 || delayPerItem >= 10) rndr();
-                    playTone(arr[i], i); await new Promise(r => setTimeout(r, delayPerItem));
-                }
-                statusMode = "done";
-            }
-            isSrt = stopSrt = isPaused = false; pse.textContent = "Pause"; active = []; verifiedIdx = -1; rndr(); upStats(); toggleUI(false);
+            isSrt = stopSrt = isPaused = false; pse.textContent = "Pause"; toggleUI(false);
         });
 
-        // ALGORITHM IMPLEMENTATIONS
-        async function bubble() { for (let i = 0; i < arr.length-1; i++) { for (let j = 0; j < arr.length-i-1; j++) { if (stopSrt) return; await tC(j, j+1); if (arr[j] > arr[j+1]) { [arr[j], arr[j+1]] = [arr[j+1], arr[j]]; await tS(j, j+1); } } } }
-        async function cocktail() { let s = 0, e = arr.length - 1, sw = true; while (sw) { sw = false; for (let i = s; i < e; i++) { if (stopSrt) return; await tC(i, i+1); if (arr[i] > arr[i+1]) { [arr[i], arr[i+1]] = [arr[i+1], arr[i]]; await tS(i, i+1); sw = true; } } if (!sw) break; e--; for (let i = e - 1; i >= s; i--) { if (stopSrt) return; await tC(i, i+1); if (arr[i] > arr[i+1]) { [arr[i], arr[i+1]] = [arr[i+1], arr[i]]; await tS(i, i+1); sw = true; } } s++; } }
-        async function comb() { let gap = arr.length, shrink = 1.3, sorted = false; while (!sorted) { gap = Math.floor(gap / shrink); if (gap <= 1) { gap = 1; sorted = true; } for (let i = 0; i + gap < arr.length; i++) { if (stopSrt) return; await tC(i, i + gap); if (arr[i] > arr[i + gap]) { [arr[i], arr[i + gap]] = [arr[i + gap], arr[i]]; await tS(i, i + gap); sorted = false; } } } }
-        async function stooge() { async function rec(l, h) { if (stopSrt) return; await tC(l, h); if (arr[l] > arr[h]) { [arr[l], arr[h]] = [arr[h], arr[l]]; await tS(l, h); } if (h - l + 1 > 2) { let t = Math.floor((h - l + 1) / 3); await rec(l, h - t); await rec(l + t, h); await rec(l, h - t); } } await rec(0, arr.length - 1); }
-        async function gnome() { let pos = 0; while (pos < arr.length) { if (stopSrt) return; if (pos === 0) pos++; await tC(pos - 1, pos); if (arr[pos] >= arr[pos - 1]) pos++; else { [arr[pos], arr[pos - 1]] = [arr[pos - 1], arr[pos]]; await tS(pos, pos - 1); pos--; } } }
-        async function gnomeOptimized() { for (let pos = 1; pos < arr.length; pos++) { let cur = pos; while (cur > 0) { if (stopSrt) return; await tC(cur - 1, cur); if (arr[cur] < arr[cur - 1]) { [arr[cur], arr[cur - 1]] = [arr[cur - 1], arr[cur]]; await tS(cur, cur - 1); cur--; } else break; } } }
-        async function gnomeQuick() { let pos = 1, last = 2; while (pos < arr.length) { if (stopSrt) return; await tC(pos - 1, pos); if (arr[pos] >= arr[pos - 1]) { pos = last; last++; } else { [arr[pos], arr[pos - 1]] = [arr[pos - 1], arr[pos]]; await tS(pos, pos - 1); pos--; if (pos === 0) { pos = last; last++; } } } }
-        async function gnomeDouble() { let left = 0, right = arr.length - 1; while (left < right) { let pos = left + 1; while (pos <= right) { if (stopSrt) return; await tC(pos - 1, pos); if (arr[pos] < arr[pos - 1]) { [arr[pos], arr[pos - 1]] = [arr[pos - 1], arr[pos]]; await tS(pos, pos - 1); if (pos > left + 1) pos--; else pos++; } else pos++; } right--; pos = right - 1; while (pos >= left) { if (stopSrt) return; await tC(pos, pos + 1); if (arr[pos] > arr[pos + 1]) { [arr[pos], arr[pos + 1]] = [arr[pos + 1], arr[pos]]; await tS(pos, pos + 1); if (pos < right - 1) pos++; else pos--; } else pos--; } left++; } }
-        async function circleSort() { async function circleRec(l, h) { if (l >= h || stopSrt) return 0; let swaps = 0, low = l, high = h; while (low < high) { await tC(low, high); if (arr[low] > arr[high]) { [arr[low], arr[high]] = [arr[high], arr[low]]; await tS(low, high); swaps++; } low++; high--; } if (low === high) { await tC(low, high + 1); if (arr[low] > arr[high + 1]) { [arr[low], arr[high + 1]] = [arr[high + 1], arr[low]]; await tS(low, high + 1); swaps++; } } let mid = Math.floor((h - l) / 2); swaps += await circleRec(l, l + mid); swaps += await circleRec(l + mid + 1, h); return swaps; } while ((await circleRec(0, arr.length - 1)) > 0 && !stopSrt); }
-        async function oddEven() { let sorted = false; while (!sorted) { sorted = true; for (let i = 1; i < arr.length - 1; i += 2) { if (stopSrt) return; await tC(i, i+1); if (arr[i] > arr[i+1]) { [arr[i], arr[i+1]] = [arr[i+1], arr[i]]; await tS(i, i+1); sorted = false; } } for (let i = 0; i < arr.length - 1; i += 2) { if (stopSrt) return; await tC(i, i+1); if (arr[i] > arr[i+1]) { [arr[i], arr[i+1]] = [arr[i+1], arr[i]]; await tS(i, i+1); sorted = false; } } } }
-        async function selection() { let n = arr.length; for (let i = 0; i < n - 1; i++) { let minIdx = i; for (let j = i + 1; j < n; j++) { if (stopSrt) return; await tC(minIdx, j); if (arr[j] < arr[minIdx]) minIdx = j; } if (minIdx !== i) { [arr[i], arr[minIdx]] = [arr[minIdx], arr[i]]; await tS(i, minIdx); } } }
-        async function doubleSelection() { let l = 0, r = arr.length - 1; while (l < r) { let minIdx = l, maxIdx = l; for (let i = l + 1; i <= r; i++) { if (stopSrt) return; await tC(minIdx, i); if (arr[i] < arr[minIdx]) minIdx = i; await tC(maxIdx, i); if (arr[i] > arr[maxIdx]) maxIdx = i; } if (minIdx !== l) { [arr[l], arr[minIdx]] = [arr[minIdx], arr[l]]; await tS(l, minIdx); if (maxIdx === l) maxIdx = minIdx; } if (maxIdx !== r) { [arr[r], arr[maxIdx]] = [arr[maxIdx], arr[r]]; await tS(r, maxIdx); } l++; r--; } }
-        async function insert(l, h) { for (let i = l + 1; i <= h; i++) { let k = arr[i], j = i - 1; while (j >= l) { if (stopSrt) return; await tC(j, j+1); if (arr[j] > k) { arr[j+1] = arr[j]; await tS(j, j+1); j--; } else break; } arr[j+1] = k; } }
-        async function shell() { for (let g = Math.floor(arr.length/2); g > 0; g = Math.floor(g/2)) { for (let i = g; i < arr.length; i++) { let t = arr[i], j = i; while (j >= g) { if (stopSrt) return; await tC(j - g, j); if (arr[j - g] > t) { arr[j] = arr[j - g]; await tS(j - g, j); j -= g; } else break; } arr[j] = t; } } }
-        async function ciuraShellSort() { const gaps = [1, 4, 10, 23, 57, 132, 301, 701, 1750, 4200]; let n = arr.length; for (let gIdx = gaps.length - 1; gIdx >= 0; gIdx--) { let g = gaps[gIdx]; if (g >= n) continue; for (let i = g; i < n; i++) { let t = arr[i], j = i; while (j >= g) { if (stopSrt) return; await tC(j - g, j); if (arr[j - g] > t) { arr[j] = arr[j - g]; await tS(j - g, j); j -= g; } else break; } arr[j] = t; } } }
-        async function binaryInsert() { for (let i = 1; i < arr.length; i++) { let key = arr[i], l = 0, r = i - 1; while (l <= r) { if (stopSrt) return; let m = Math.floor((l + r) / 2); await tC(m, i); if (arr[m] > key) r = m - 1; else l = m + 1; } for (let j = i - 1; j >= l; j--) { if (stopSrt) return; arr[j + 1] = arr[j]; await tS(j, j + 1); } arr[l] = key; await tS(l, l); } }
-        async function librarySort() { let n = arr.length, gapped = new Array(n * 2).fill(-1); gapped[0] = arr[0]; let len = 1; for (let i = 1; i < n; i++) { if (stopSrt) return; let key = arr[i], l = 0, r = len * 2; while (l <= r) { let m = Math.floor((l + r) / 2); if (gapped[m] === -1) { l = m + 1; continue; } await tC(i, i); if (gapped[m] > key) r = m - 1; else l = m + 1; } gapped.splice(l, 0, key); len++; } let idx = 0; for (let v of gapped) { if (v !== -1 && idx < n) { arr[idx] = v; await tS(idx, idx); idx++; } } }
-        async function cycle() { let n = arr.length; for (let cs = 0; cs <= n - 2; cs++) { let item = arr[cs], pos = cs; for (let i = cs + 1; i < n; i++) { if (stopSrt) return; await tC(cs, i); if (arr[i] < item) pos++; } if (pos === cs) continue; while (item === arr[pos]) { if (stopSrt) return; await tC(cs, pos); pos++; } if (pos !== cs) { let t = arr[pos]; arr[pos] = item; item = t; await tS(cs, pos); } while (pos !== cs) { pos = cs; for (let i = cs + 1; i < n; i++) { if (stopSrt) return; await tC(cs, i); if (arr[i] < item) pos++; } while (item === arr[pos]) { if (stopSrt) return; await tC(cs, pos); pos++; } if (item !== arr[pos]) { let t = arr[pos]; arr[pos] = item; item = t; await tS(cs, pos); } } } }
-        async function pancake() { async function flip(k) { let l = 0, r = k; while (l < r) { if (stopSrt) return; [arr[l], arr[r]] = [arr[r], arr[l]]; await tS(l, r); l++; r--; } } for (let cur = arr.length; cur > 1; cur--) { if (stopSrt) return; let mi = 0; for (let i = 1; i < cur; i++) { if (stopSrt) return; await tC(mi, i); if (arr[i] > arr[mi]) mi = i; } if (mi !== cur - 1) { if (mi !== 0) await flip(mi); await flip(cur - 1); } } }
-        async function bingoSort() { let n = arr.length, min = arr[0], max = arr[0]; for (let i = 1; i < n; i++) { if (arr[i] < min) min = arr[i]; if (arr[i] > max) max = arr[i]; } let bingo = min, nextBingo = max, nextElem = 0; while (bingo < max) { let start = nextElem; for (let i = start; i < n; i++) { if (stopSrt) return; await tC(i, i); if (arr[i] === bingo) { [arr[i], arr[nextElem]] = [arr[nextElem], arr[i]]; await tS(i, nextElem); nextElem++; } else if (arr[i] > bingo && arr[i] < nextBingo) { nextBingo = arr[i]; } } bingo = nextBingo; nextBingo = max; } }
-        async function patienceSort() { let piles = []; for (let i = 0; i < arr.length; i++) { if (stopSrt) return; let v = arr[i], placed = false; for (let p = 0; p < piles.length; p++) { await tC(i, i); if (piles[p][piles[p].length - 1] >= v) { piles[p].push(v); placed = true; break; } } if (!placed) piles.push([v]); } let idx = 0; while (piles.length > 0) { if (stopSrt) return; let minP = 0; for (let p = 1; p < piles.length; p++) { if (piles[p][piles[p].length - 1] < piles[minP][piles[minP].length - 1]) minP = p; } arr[idx] = piles[minP].pop(); await tS(idx, idx); if (piles[minP].length === 0) piles.splice(minP, 1); idx++; } }
-        async function treeSort() { class Node { constructor(v) { this.v = v; this.left = null; this.right = null; } } let root = null; async function insertNode(r, val) { if (!r) return new Node(val); await tC(0, 0); if (val < r.v) r.left = await insertNode(r.left, val); else r.right = await insertNode(r.right, val); return r; } for (let i = 0; i < arr.length; i++) { if (stopSrt) return; root = await insertNode(root, arr[i]); } let idx = 0; async function inOrder(r) { if (!r || stopSrt) return; await inOrder(r.left); arr[idx] = r.v; await tS(idx, idx); idx++; await inOrder(r.right); } await inOrder(root); }
-        async function tournamentSort() { let n = arr.length, treeSize = 1; while (treeSize < n) treeSize *= 2; let tree = new Array(2 * treeSize).fill({ val: Infinity, idx: -1 }); for (let i = 0; i < n; i++) tree[treeSize + i] = { val: arr[i], idx: i }; for (let i = treeSize - 1; i > 0; i--) { if (stopSrt) return; let left = tree[2 * i], right = tree[2 * i + 1]; if (left.idx !== -1 && right.idx !== -1) await tC(left.idx, right.idx); tree[i] = left.val <= right.val ? left : right; } let sorted = []; for (let k = 0; k < n; k++) { if (stopSrt) return; let winner = tree[1]; sorted.push(winner.val); let pos = treeSize + winner.idx; tree[pos] = { val: Infinity, idx: -1 }; pos = Math.floor(pos / 2); while (pos > 0) { let left = tree[2 * pos], right = tree[2 * pos + 1]; tree[pos] = left.val <= right.val ? left : right; pos = Math.floor(pos / 2); } } for (let i = 0; i < n; i++) { if (stopSrt) return; arr[i] = sorted[i]; await tS(i, i); } }
-        async function quick() { let stack = [0, arr.length - 1]; while (stack.length > 0) { let h = stack.pop(), l = stack.pop(); if (l >= h || stopSrt) continue; let p = arr[h], i = l - 1; for (let j = l; j < h; j++) { if (stopSrt) return; await tC(j, h); if (arr[j] < p) { i++; [arr[i], arr[j]] = [arr[j], arr[i]]; await tS(i, j); } } [arr[i+1], arr[h]] = [arr[h], arr[i+1]]; await tS(i+1, h); let idx = i + 1; stack.push(l, idx - 1); stack.push(idx + 1, h); } }
-        async function dualQuick() { let stack = [0, arr.length - 1]; while (stack.length > 0) { let h = stack.pop(), l = stack.pop(); if (l >= h || stopSrt) continue; await tC(l, h); if (arr[l] > arr[h]) { [arr[l], arr[h]] = [arr[h], arr[l]]; await tS(l, h); } let p1 = arr[l], p2 = arr[h], lt = l + 1, gt = h - 1, k = l + 1; while (k <= gt) { if (stopSrt) return; await tC(k, l); if (arr[k] < p1) { [arr[k], arr[lt]] = [arr[lt], arr[k]]; await tS(k, lt); lt++; } else { await tC(k, h); if (arr[k] >= p2) { while (arr[gt] > p2 && k < gt) { if (stopSrt) return; totalComps++; gt--; } [arr[k], arr[gt]] = [arr[gt], arr[k]]; await tS(k, gt); gt--; await tC(k, l); if (arr[k] < p1) { [arr[k], arr[lt]] = [arr[lt], arr[k]]; await tS(k, lt); lt++; } } } k++; } lt--; gt++; [arr[l], arr[lt]] = [arr[lt], arr[l]]; await tS(l, lt); [arr[h], arr[gt]] = [arr[gt], arr[h]]; await tS(h, gt); stack.push(l, lt - 1); if (p1 < p2) stack.push(lt + 1, gt - 1); stack.push(gt + 1, h); } }
-        async function quick3Way() { async function rec(l, r) { if (l >= r || stopSrt) return; let lt = l, gt = r, i = l + 1, pivot = arr[l]; while (i <= gt) { if (stopSrt) return; await tC(i, lt); if (arr[i] < pivot) { [arr[lt], arr[i]] = [arr[i], arr[lt]]; await tS(lt, i); lt++; i++; } else if (arr[i] > pivot) { [arr[i], arr[gt]] = [arr[gt], arr[i]]; await tS(i, gt); gt--; } else i++; } await rec(l, lt - 1); await rec(gt + 1, r); } await rec(0, arr.length - 1); }
-        async function mergeOut() { let n = arr.length; for (let sz = 1; sz < n; sz *= 2) { for (let l = 0; l < n - 1; l += 2 * sz) { let m = Math.min(l + sz - 1, n - 1), r = Math.min(l + 2 * sz - 1, n - 1), temp = [], i = l, j = m + 1; while (i <= m && j <= r) { if (stopSrt) return; await tC(i, j); if (arr[i] <= arr[j]) temp.push(arr[i++]); else temp.push(arr[j++]); } while (i <= m) temp.push(arr[i++]); while (j <= r) temp.push(arr[j++]); for (let k = 0; k < temp.length; k++) { if (stopSrt) return; arr[l + k] = temp[k]; await tS(l + k, l + k); } } } }
-        async function mergeIter() { let n = arr.length; for (let s = 1; s < n; s *= 2) { for (let l = 0; l < n - 1; l += 2 * s) { let m = Math.min(l + s - 1, n - 1), r = Math.min(l + 2 * s - 1, n - 1), left = arr.slice(l, m + 1), right = arr.slice(m + 1, r + 1), i = 0, j = 0, k = l; while (i < left.length && j < right.length) { if (stopSrt) return; totalComps++; arr[k] = left[i] <= right[j] ? left[i++] : right[j++]; await tS(k, k); k++; } while (i < left.length) { if (stopSrt) return; arr[k] = left[i++]; await tS(k, k); k++; } while (j < right.length) { if (stopSrt) return; arr[k] = right[j++]; await tS(k, k); k++; } } } }
-        async function mergeInP() { let n = arr.length; for (let sz = 1; sz < n; sz *= 2) { for (let l = 0; l < n - 1; l += 2 * sz) { let m = Math.min(l + sz - 1, n - 1), r = Math.min(l + 2 * sz - 1, n - 1), i = l, s2 = m + 1; while (i <= m && s2 <= r) { if (stopSrt) return; await tC(i, s2); if (arr[i] <= arr[s2]) i++; else { let v = arr[s2], idx = s2; while (idx !== i) { if (stopSrt) return; arr[idx] = arr[idx - 1]; await tS(idx, idx); idx--; } arr[i] = v; await tS(i, i); i++; m++; s2++; } } } } }
-        async function mergeWeave() { let n = arr.length; for (let sz = 1; sz < n; sz *= 2) { for (let l = 0; l < n - 1; l += 2 * sz) { let m = Math.min(l + sz - 1, n - 1), r = Math.min(l + 2 * sz - 1, n - 1), i = l, j = m + 1; while (i <= m && j <= r) { if (stopSrt) return; await tC(i, j); if (arr[i] > arr[j]) { let v = arr[j]; for (let k = j; k > i; k--) { if (stopSrt) return; arr[k] = arr[k - 1]; await tS(k, k); } arr[i] = v; await tS(i, i); m++; j++; } i += 2; } await insert(l, r); } } }
-        async function timSort() { let n = arr.length, RUN = 16; for (let i = 0; i < n; i += RUN) await insert(i, Math.min(i + RUN - 1, n - 1)); for (let size = RUN; size < n; size = 2 * size) { for (let left = 0; left < n; left += 2 * size) { let mid = Math.min(left + size - 1, n - 1), right = Math.min(left + 2 * size - 1, n - 1); if (mid < right) { let temp = [], i = left, j = mid + 1; while (i <= mid && j <= right) { if (stopSrt) return; await tC(i, j); if (arr[i] <= arr[j]) temp.push(arr[i++]); else temp.push(arr[j++]); } while (i <= mid) temp.push(arr[i++]); while (j <= right) temp.push(arr[j++]); for (let k = 0; k < temp.length; k++) { if (stopSrt) return; arr[left + k] = temp[k]; await tS(left + k, left + k); } } } } }
-        async function strandSort() { let sub = [], res = [], list = [...arr]; while (list.length > 0) { sub = [list.shift()]; for (let i = 0; i < list.length; ) { if (stopSrt) return; await tC(i, i); if (list[i] >= sub[sub.length - 1]) sub.push(list.splice(i, 1)[0]); else i++; } let merged = [], i = 0, j = 0; while (i < res.length && j < sub.length) { if (res[i] <= sub[j]) merged.push(res[i++]); else merged.push(sub[j++]); } while (i < res.length) merged.push(res[i++]); while (j < sub.length) merged.push(sub[j++]); res = merged; for (let k = 0; k < res.length; k++) { arr[k] = res[k]; await tS(k, k); } } }
-        async function quadSort() { let n = arr.length; for (let i = 0; i < n; i += 4) { let end = Math.min(i + 4, n); await insert(i, end - 1); } for (let sz = 4; sz < n; sz *= 4) { for (let l = 0; l < n; l += 4 * sz) { let m1 = Math.min(l + sz, n), m2 = Math.min(l + 2 * sz, n), m3 = Math.min(l + 3 * sz, n), r = Math.min(l + 4 * sz, n), temp = [], p0 = l, p1 = m1, p2 = m2, p3 = m3; while (p0 < m1 || p1 < m2 || p2 < m3 || p3 < r) { if (stopSrt) return; let minVal = Infinity, minIdx = -1; if (p0 < m1) { await tC(p0, p0); if (arr[p0] < minVal) { minVal = arr[p0]; minIdx = 0; } } if (p1 < m2) { await tC(p1, p1); if (arr[p1] < minVal) { minVal = arr[p1]; minIdx = 1; } } if (p2 < m3) { await tC(p2, p2); if (arr[p2] < minVal) { minVal = arr[p2]; minIdx = 2; } } if (p3 < r) { await tC(p3, p3); if (arr[p3] < minVal) { minVal = arr[p3]; minIdx = 3; } } if (minIdx === 0) temp.push(arr[p0++]); else if (minIdx === 1) temp.push(arr[p1++]); else if (minIdx === 2) temp.push(arr[p2++]); else if (minIdx === 3) temp.push(arr[p3++]); } for (let k = 0; k < temp.length; k++) { if (stopSrt) return; arr[l + k] = temp[k]; await tS(l + k, l + k); } } } }
-        async function dropMergeSort() { if (arr.length <= 1) return; let kept = [arr[0]], dropped = []; for (let i = 1; i < arr.length; i++) { if (stopSrt) return; await tC(i, i); if (arr[i] >= kept[kept.length - 1]) kept.push(arr[i]); else dropped.push(arr[i]); } dropped.sort((a, b) => a - b); let i = 0, j = 0, k = 0; while (i < kept.length && j < dropped.length) { if (stopSrt) return; totalComps++; arr[k] = kept[i] <= dropped[j] ? kept[i++] : dropped[j++]; await tS(k, k); k++; } while (i < kept.length) { if (stopSrt) return; arr[k] = kept[i++]; await tS(k, k); k++; } while (j < dropped.length) { if (stopSrt) return; arr[k] = dropped[j++]; await tS(k, k); k++; } }
-        async function naturalMergeSort() { let n = arr.length; while (true) { let runs = [], start = 0; while (start < n) { let end = start; while (end + 1 < n) { await tC(end, end + 1); if (arr[end] <= arr[end + 1]) end++; else break; } runs.push({ l: start, r: end }); start = end + 1; } if (runs.length <= 1) break; for (let i = 0; i < runs.length - 1; i += 2) { if (stopSrt) return; let l = runs[i].l, m = runs[i].r, r = runs[i + 1].r, temp = [], p1 = l, p2 = m + 1; while (p1 <= m && p2 <= r) { if (stopSrt) return; await tC(p1, p2); if (arr[p1] <= arr[p2]) temp.push(arr[p1++]); else temp.push(arr[p2++]); } while (p1 <= m) temp.push(arr[p1++]); while (p2 <= r) temp.push(arr[p2++]); for (let k = 0; k < temp.length; k++) { if (stopSrt) return; arr[l + k] = temp[k]; await tS(l + k, l + k); } } } }
-        async function heapMax() { let n = arr.length; async function sift(root, size) { while (root * 2 + 1 < size) { if (stopSrt) return; let child = root * 2 + 1, max = root; await tC(child, max); if (arr[child] > arr[max]) max = child; if (child + 1 < size) { await tC(child + 1, max); if (arr[child + 1] > arr[max]) max = child + 1; } if (max === root) break; [arr[root], arr[max]] = [arr[max], arr[root]]; await tS(root, max); root = max; } } for (let i = Math.floor(n / 2) - 1; i >= 0; i--) await sift(i, n); for (let end = n - 1; end > 0; end--) { if (stopSrt) return; [arr[0], arr[end]] = [arr[end], arr[0]]; await tS(0, end); await sift(0, end); } }
-        async function heapMin() { let n = arr.length; async function sift(root, size) { while (root * 2 + 1 < size) { if (stopSrt) return; let child = root * 2 + 1, min = root; await tC(child, min); if (arr[child] < arr[min]) min = child; if (child + 1 < size) { await tC(child + 1, min); if (arr[child + 1] < arr[min]) min = child + 1; } if (min === root) break; [arr[root], arr[min]] = [arr[min], arr[root]]; await tS(root, min); root = min; } } for (let i = Math.floor(n / 2) - 1; i >= 0; i--) await sift(i, n); for (let end = n - 1; end > 0; end--) { if (stopSrt) return; [arr[0], arr[end]] = [arr[end], arr[0]]; await tS(0, end); await sift(0, end); } arr.reverse(); for(let i=0; i<n; i++) await tS(i,i); }
-        async function ternaryHeap() { let n = arr.length; async function sift(root, size) { while (3 * root + 1 < size) { if (stopSrt) return; let max = root; for (let c = 1; c <= 3; c++) { let child = 3 * root + c; if (child < size) { await tC(child, max); if (arr[child] > arr[max]) max = child; } } if (max === root) break; [arr[root], arr[max]] = [arr[max], arr[root]]; await tS(root, max); root = max; } } for (let i = Math.floor((n - 2) / 3); i >= 0; i--) await sift(i, n); for (let end = n - 1; end > 0; end--) { if (stopSrt) return; [arr[0], arr[end]] = [arr[end], arr[0]]; await tS(0, end); await sift(0, end); } }
-        async function quaternaryHeapSort() { let n = arr.length; async function siftDown(root, size) { while (true) { if (stopSrt) return; let max = root; for (let c = 1; c <= 4; c++) { let child = 4 * root + c; if (child < size) { await tC(child, max); if (arr[child] > arr[max]) max = child; } } if (max === root) break; [arr[root], arr[max]] = [arr[max], arr[root]]; await tS(root, max); root = max; } } for (let i = Math.floor((n - 2) / 4); i >= 0; i--) await siftDown(i, n); for (let end = n - 1; end > 0; end--) { if (stopSrt) return; [arr[0], arr[end]] = [arr[end], arr[0]]; await tS(0, end); await siftDown(0, end); } }
-        async function smoothsort() { await heapMax(); }
-        async function splayTreeSort() { class Node { constructor(v) { this.v = v; this.left = null; this.right = null; } } function rotateRight(x) { let y = x.left; x.left = y.right; y.right = x; return y; } function rotateLeft(x) { let y = x.right; x.right = y.left; y.left = x; return y; } function splay(root, key) { if (!root || root.v === key) return root; if (root.v > key) { if (!root.left) return root; if (root.left.v > key) { root.left.left = splay(root.left.left, key); root = rotateRight(root); } else if (root.left.v < key) { root.left.right = splay(root.left.right, key); if (root.left.right) root.left = rotateLeft(root.left); } return root.left ? rotateRight(root) : root; } else { if (!root.right) return root; if (root.right.v > key) { root.right.left = splay(root.right.left, key); if (root.right.left) root.right = rotateRight(root.right); } else if (root.right.v < key) { root.right.right = splay(root.right.right, key); root = rotateLeft(root); } return root.right ? rotateLeft(root) : root; } } function insertNode(root, val) { if (!root) return new Node(val); root = splay(root, val); let n = new Node(val); if (root.v > val) { n.right = root; n.left = root.left; root.left = null; } else { n.left = root; n.right = root.right; root.right = null; } return n; } let root = null; for (let i = 0; i < arr.length; i++) { if (stopSrt) return; await tC(i, i); root = insertNode(root, arr[i]); } let idx = 0; async function inOrder(r) { if (!r || stopSrt) return; await inOrder(r.left); arr[idx] = r.v; await tS(idx, idx); idx++; await inOrder(r.right); } await inOrder(root); }
-        async function skewHeapSort() { class Node { constructor(v) { this.v = v; this.l = null; this.r = null; } } function merge(a, b) { if (!a) return b; if (!b) return a; if (a.v > b.v) [a, b] = [b, a]; let temp = a.l; a.l = merge(a.r, b); a.r = temp; return a; } let root = null; for (let i = 0; i < arr.length; i++) { if (stopSrt) return; await tC(i, i); root = merge(root, new Node(arr[i])); } let idx = 0; while (root) { if (stopSrt) return; arr[idx] = root.v; await tS(idx, idx); idx++; root = merge(root.l, root.r); } }
-        async function pairingHeapSort() { class Node { constructor(v) { this.v = v; this.sub = []; } } function merge(a, b) { if (!a) return b; if (!b) return a; if (a.v < b.v) { a.sub.push(b); return a; } else { b.sub.push(a); return b; } } function deleteMin(r) { if (!r || r.sub.length === 0) return null; let sub = r.sub, paired = []; for (let i = 0; i < sub.length; i += 2) { if (i + 1 < sub.length) paired.push(merge(sub[i], sub[i + 1])); else paired.push(sub[i]); } let res = null; for (let i = paired.length - 1; i >= 0; i--) res = merge(res, paired[i]); return res; } let root = null; for (let i = 0; i < arr.length; i++) { if (stopSrt) return; await tC(i, i); root = merge(root, new Node(arr[i])); } let idx = 0; while (root) { if (stopSrt) return; arr[idx] = root.v; await tS(idx, idx); idx++; root = deleteMin(root); } }
-        async function treapSort() { class Node { constructor(v) { this.v = v; this.p = Math.random(); this.l = null; this.r = null; } } function rotateRight(y) { let x = y.l; y.l = x.r; x.r = y; return x; } function rotateLeft(x) { let y = x.r; x.r = y.l; y.l = x; return y; } function insert(root, val) { if (!root) return new Node(val); if (val < root.v) { root.l = insert(root.l, val); if (root.l.p > root.p) root = rotateRight(root); } else { root.r = insert(root.r, val); if (root.r.p > root.p) root = rotateLeft(root); } return root; } let root = null; for (let i = 0; i < arr.length; i++) { if (stopSrt) return; await tC(i, i); root = insert(root, arr[i]); } let idx = 0; async function inOrder(n) { if (!n || stopSrt) return; await inOrder(n.l); arr[idx] = n.v; await tS(idx, idx); idx++; await inOrder(n.r); } await inOrder(root); }
-        async function counting() { let n = arr.length, maxVal = Math.max(...arr), count = new Array(maxVal + 1).fill(0); for (let i = 0; i < n; i++) { if (stopSrt) return; await tC(i, i); count[arr[i]]++; } let idx = 0; for (let val = 0; val <= maxVal; val++) { while (count[val] > 0) { if (stopSrt) return; arr[idx] = val; await tS(idx, idx); count[val]--; idx++; } } }
-        async function bucket() { let n = arr.length, maxVal = Math.max(...arr), numB = Math.max(2, Math.floor(Math.sqrt(n))), bkts = Array.from({length: numB}, () => []); for (let i = 0; i < n; i++) { if (stopSrt) return; await tC(i, i); let bIdx = Math.min(numB - 1, Math.floor((arr[i] / (maxVal + 1)) * numB)); bkts[bIdx].push(arr[i]); } let idx = 0; for (let b = 0; b < numB; b++) { bkts[b].sort((x, y) => x - y); for (let v of bkts[b]) { if (stopSrt) return; arr[idx] = v; await tS(idx, idx); idx++; } } }
-        async function radixLSD() { let base = parseInt(rb.value), max = arr.length - 1, exp = 1; while (Math.floor(max / exp) > 0) { let bkts = Array.from({length: base}, () => []); for (let i = 0; i < arr.length; i++) { if (stopSrt) return; await tC(i, i); bkts[Math.floor(arr[i] / exp) % base].push(arr[i]); } let idx = 0; for (let b = 0; b < base; b++) { for (let v of bkts[b]) { if (stopSrt) return; arr[idx] = v; await tS(idx, idx); idx++; } } exp *= base; } }
-        async function radixMSD() { let base = parseInt(rb.value), max = arr.length - 1, mExp = 1; while (Math.floor(max / mExp) >= base) mExp *= base; let stack = [{l: 0, r: arr.length - 1, exp: mExp}]; while (stack.length > 0) { let task = stack.pop(), l = task.l, r = task.r, exp = task.exp; if (l >= r || exp <= 0 || stopSrt) continue; let bkts = Array.from({length: base}, () => []); for (let i = l; i <= r; i++) { if (stopSrt) return; await tC(i, i); bkts[Math.floor(arr[i]/exp)%base].push(arr[i]); } let idx = l, cts = [l]; for (let b = 0; b < base; b++) { for (let v of bkts[b]) { if (stopSrt) return; arr[idx] = v; await tS(idx, idx); idx++; } cts.push(idx); } for (let b = base - 1; b >= 0; b--) { stack.push({l: cts[b], r: cts[b+1] - 1, exp: Math.floor(exp / base)}); } } }
-        async function gravity() { let n = arr.length, maxVal = Math.max(...arr), beads = Array.from({length: n}, () => new Uint8Array(maxVal + 1)); for (let i = 0; i < n; i++) for (let j = 0; j < arr[i]; j++) beads[i][j] = 1; for (let j = 0; j < maxVal; j++) { let sum = 0; for (let i = 0; i < n; i++) { if (stopSrt) return; totalComps++; sum += beads[i][j]; beads[i][j] = 0; } for (let i = n - 1; i >= n - sum; i--) beads[i][j] = 1; for (let i = 0; i < n; i++) { let count = 0; for (let k = 0; k <= maxVal; k++) if (beads[i][k]) count++; if (arr[i] !== count) { arr[i] = count; await tS(i, i); } } } }
-        async function pigeonholeSort() { let min = Math.min(...arr), max = Math.max(...arr), size = max - min + 1, holes = Array.from({length: size}, () => []); for (let i = 0; i < arr.length; i++) { if (stopSrt) return; await tC(i, i); holes[arr[i] - min].push(arr[i]); } let idx = 0; for (let i = 0; i < size; i++) { for (let v of holes[i]) { if (stopSrt) return; arr[idx] = v; await tS(idx, idx); idx++; } } }
-        async function flashsort() { let n = arr.length, min = Math.min(...arr), maxIdx = 0; for (let i = 1; i < n; i++) if (arr[i] > arr[maxIdx]) maxIdx = i; if (arr[maxIdx] === min) return; let m = Math.floor(0.43 * n), L = new Array(m).fill(0), c1 = (m - 1) / (arr[maxIdx] - min); for (let i = 0; i < n; i++) L[Math.floor(c1 * (arr[i] - min))]++; for (let k = 1; k < m; k++) L[k] += L[k - 1]; [arr[0], arr[maxIdx]] = [arr[maxIdx], arr[0]]; await tS(0, maxIdx); let move = 0, j = 0, k = m - 1; while (move < n - 1) { while (j >= L[k]) { j++; k = Math.floor(c1 * (arr[j] - min)); } let flash = arr[j]; while (j !== L[k]) { k = Math.floor(c1 * (flash - min)); let hold = arr[L[k] - 1]; arr[L[k] - 1] = flash; await tS(L[k] - 1, L[k] - 1); flash = hold; L[k]--; move++; } } await insert(0, n - 1); }
-        async function americanFlagSort() { await radixMSD(); }
-        async function interpolationSort() { let n = arr.length, min = Math.min(...arr), max = Math.max(...arr); if (min === max) return; let buckets = Array.from({length: n}, () => []); for (let i = 0; i < n; i++) { if (stopSrt) return; await tC(i, i); let idx = Math.floor(((arr[i] - min) / (max - min)) * (n - 1)); buckets[idx].push(arr[i]); } let pos = 0; for (let b = 0; b < n; b++) { buckets[b].sort((x, y) => x - y); for (let val of buckets[b]) { if (stopSrt) return; arr[pos] = val; await tS(pos, pos); pos++; } } }
-        async function proxmapSort() { let n = arr.length, min = Math.min(...arr), max = Math.max(...arr); if (min === max) return; let mapKey = (v) => Math.floor(((v - min) / (max - min + 1)) * n), hitCount = new Array(n).fill(0); for (let i = 0; i < n; i++) { if (stopSrt) return; await tC(i, i); hitCount[mapKey(arr[i])]++; } let proxMap = new Array(n).fill(0), total = 0; for (let i = 0; i < n; i++) { proxMap[i] = total; total += hitCount[i]; } let temp = new Array(n).fill(-1); for (let i = 0; i < n; i++) { if (stopSrt) return; let v = arr[i], p = proxMap[mapKey(v)]; while (temp[p] !== -1 && temp[p] <= v) p++; if (temp[p] !== -1) { let shift = p; while (temp[shift] !== -1) shift++; for (let k = shift; k > p; k--) temp[k] = temp[k - 1]; } temp[p] = v; } for (let i = 0; i < n; i++) { if (stopSrt) return; arr[i] = temp[i]; await tS(i, i); } }
-        async function spreadsort() { let n = arr.length, min = Math.min(...arr), max = Math.max(...arr); if (min === max) return; let numBins = Math.max(2, Math.floor(Math.sqrt(n))), bins = Array.from({length: numBins}, () => []); for (let i = 0; i < n; i++) { if (stopSrt) return; await tC(i, i); let b = Math.min(numBins - 1, Math.floor(((arr[i] - min) / (max - min + 1)) * numBins)); bins[b].push(arr[i]); } let pos = 0; for (let b = 0; b < numBins; b++) { bins[b].sort((x, y) => x - y); for (let val of bins[b]) { if (stopSrt) return; arr[pos] = val; await tS(pos, pos); pos++; } } }
-        async function bitonicSort() { let n = arr.length; for (let k = 2; k <= n; k *= 2) { for (let j = k / 2; j > 0; j = Math.floor(j / 2)) { for (let i = 0; i < n; i++) { let l = i ^ j; if (l > i) { if (stopSrt) return; await tC(i, l); if (((i & k) === 0 && arr[i] > arr[l]) || ((i & k) !== 0 && arr[i] < arr[l])) { [arr[i], arr[l]] = [arr[l], arr[i]]; await tS(i, l); } } } } } }
-        async function oddEvenMergeSort() { async function oemRec(l, n) { if (n > 1) { let m = n / 2; await oemRec(l, m); await oemRec(l + m, m); for (let i = 0; i < m; i++) { if (stopSrt) return; await tC(l + i, l + i + m); if (arr[l + i] > arr[l + i + m]) { [arr[l + i], arr[l + i + m]] = [arr[l + i + m], arr[l + i]]; await tS(l + i, l + i + m); } } } } await oemRec(0, arr.length); }
-        async function pairwiseSortingNetwork() { let n = arr.length; for (let k = 1; k < n; k *= 2) { for (let i = 0; i < n - k; i += 2 * k) { for (let j = 0; j < k; j++) { if (i + j + k < n) { if (stopSrt) return; await tC(i + j, i + j + k); if (arr[i + j] > arr[i + j + k]) { [arr[i + j], arr[i + j + k]] = [arr[i + j + k], arr[i + j]]; await tS(i + j, i + j + k); } } } } } }
-        async function shearSort() { let n = arr.length, rows = Math.floor(Math.sqrt(n)), cols = Math.ceil(n / rows), passes = Math.ceil(Math.log2(rows * cols)) + 1; for (let p = 0; p < passes; p++) { for (let r = 0; r < rows; r++) { let start = r * cols, end = Math.min((r + 1) * cols, n), rowArr = arr.slice(start, end); if (r % 2 === 0) rowArr.sort((a, b) => a - b); else rowArr.sort((a, b) => b - a); for (let c = 0; c < rowArr.length; c++) { if (stopSrt) return; arr[start + c] = rowArr[c]; await tS(start + c, start + c); } } for (let c = 0; c < cols; c++) { let colIndices = []; for (let r = 0; r < rows; r++) { let idx = r * cols + c; if (idx < n) colIndices.push(idx); } for (let i = 0; i < colIndices.length; i++) { for (let j = 0; j < colIndices.length - 1 - i; j++) { if (stopSrt) return; let idx1 = colIndices[j], idx2 = colIndices[j + 1]; await tC(idx1, idx2); if (arr[idx1] > arr[idx2]) { [arr[idx1], arr[idx2]] = [arr[idx2], arr[idx1]]; await tS(idx1, idx2); } } } } } await insert(0, n - 1); }
-        async function boseNelsonSort() { let n = arr.length, pairs = []; function boseNelson(i, m, j, n) { if (m === 1 && n === 1) pairs.push([i, j]); else if (m === 1 && n === 2) { pairs.push([i, j + 1]); pairs.push([i, j]); } else if (m === 2 && n === 1) { pairs.push([i, j]); pairs.push([i + 1, j]); } else { let ma = Math.floor(m / 2), mb = m - ma, na = Math.floor(n / 2), nb = n - na; boseNelson(i, ma, j, na); boseNelson(i + ma, mb, j + na, nb); boseNelson(i + ma, mb, j, na); } } function generateNetwork(start, length) { if (length > 1) { let m = Math.floor(length / 2); generateNetwork(start, m); generateNetwork(start + m, length - m); boseNelson(start, m, start + m, length - m); } } generateNetwork(0, n); for (let p of pairs) { if (stopSrt) return; let i = p[0], j = p[1]; if (i < n && j < n && i !== j) { let a = Math.min(i, j), b = Math.max(i, j); await tC(a, b); if (arr[a] > arr[b]) { [arr[a], arr[b]] = [arr[b], arr[a]]; await tS(a, b); } } } }
-        async function bogo() { while (true) { let s = true; for(let i=0; i<arr.length-1; i++) { await tC(i, i+1); if(arr[i]>arr[i+1]) { s = false; break; } } if (s || stopSrt) return; for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; await tS(i, j); } } }
-        async function bogoImprovised() { let i = 0; while (i < arr.length - 1) { if (stopSrt) return; await tC(i, i + 1); if (arr[i] <= arr[i + 1]) i++; else { for (let k = arr.length - 1; k > i; k--) { if (stopSrt) return; const j = i + Math.floor(Math.random() * (k - i + 1)); [arr[k], arr[j]] = [arr[j], arr[k]]; await tS(k, j); } i = 0; } } }
-        async function bozo() { while (true) { let sorted = true; for (let i = 0; i < arr.length - 1; i++) { if (stopSrt) return; await tC(i, i + 1); if (arr[i] > arr[i + 1]) { sorted = false; break; } } if (sorted) return; let i = Math.floor(Math.random() * arr.length), j = Math.floor(Math.random() * arr.length); [arr[i], arr[j]] = [arr[j], arr[i]]; await tS(i, j); } }
-        async function slowsort() { async function rec(i, j) { if (i >= j || stopSrt) return; let m = Math.floor((i + j) / 2); await rec(i, m); await rec(m + 1, j); await tC(m, j); if (arr[m] > arr[j]) { [arr[m], arr[j]] = [arr[j], arr[m]]; await tS(m, j); } await rec(i, j - 1); } await rec(0, arr.length - 1); }
-        async function sleepSort() { let copy = [...arr], idx = 0; copy.sort((a,b) => a-b); for(let v of copy) { if (stopSrt) return; arr[idx] = v; await tS(idx, idx); idx++; } }
-        async function quantumBogo() { let checkSorted = async () => { for (let i = 0; i < arr.length - 1; i++) { if (stopSrt) return false; await tC(i, i + 1); if (arr[i] > arr[i + 1]) return false; } return true; }; if (await checkSorted()) return; for (let attempts = 0; attempts < 5 && !stopSrt; attempts++) { for (let i = arr.length - 1; i > 0; i--) { let j = Math.floor(Math.random() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; await tS(i, j); } if (await checkSorted()) return; } }
-        async function miracleSort() { let sorted = false; while (!sorted && !stopSrt) { sorted = true; for (let i = 0; i < arr.length - 1; i++) { if (stopSrt) return; await tC(i, i + 1); if (arr[i] > arr[i + 1]) sorted = false; } if (!sorted) await new Promise(r => setTimeout(r, 100)); } }
-        async function stalin() { if (arr.length <= 1) return; let maxSeen = arr[0], i = 1; while (i < arr.length) { if (stopSrt) return; await tC(i - 1, i); if (arr[i] < maxSeen) { arr.splice(i, 1); await tS(i, i); } else { maxSeen = arr[i]; i++; } } }
-        async function stalinSelective() { if (arr.length <= 1) return; let maxSeen = arr[0], i = 1; while (i < arr.length) { if (stopSrt) return; await tC(i - 1, i); if (arr[i] < maxSeen) { if (Math.random() < 0.5) { arr.splice(i, 1); await tS(i, i); } else i++; } else { maxSeen = arr[i]; i++; } } }
-        async function stalinGulag() { if (arr.length <= 1) return; let maxSeen = arr[0], i = 1, endBound = arr.length; while (i < endBound) { if (stopSrt) return; await tC(i - 1, i); if (arr[i] < maxSeen) { let exiled = arr.splice(i, 1)[0]; arr.push(exiled); endBound--; await tS(i, arr.length - 1); } else { maxSeen = arr[i]; i++; } } }
-        async function intelligentDesignSort() { for (let i = 0; i < arr.length; i++) { if (stopSrt) return; await tC(i, i); } }
-
-        updateVariants(); init();
+        // INITIALIZATION
+        updateSingleVariants();
+        createInstances();
     </script>
 </body>
 </html>
