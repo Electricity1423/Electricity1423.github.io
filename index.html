@@ -299,6 +299,7 @@
 
         let instances = [];
         let baseArray = [];
+        let globalRank = 1;
         let isSrt = false, stopSrt = false, isPaused = false, opsCount = 0;
         let audioCtx = null, masterGain = null, biquadFilter = null;
 
@@ -380,7 +381,7 @@
 
                     const stats = document.createElement('div');
                     stats.className = 'grid-stats';
-                    stats.innerHTML = `C:<span id="c_${this.id}">0</span> S:<span id="s_${this.id}">0</span>`;
+                    stats.innerHTML = `<span id="rank_${this.id}" style="color: #ffd700; font-weight: bold; margin-right: 6px; display: none;"></span>C:<span id="c_${this.id}">0</span> S:<span id="s_${this.id}">0</span>`;
 
                     header.appendChild(algSel);
                     header.appendChild(varSel);
@@ -398,7 +399,8 @@
                         algSel: algSel,
                         varSel: varSel,
                         compCount: cell.querySelector(`#c_${this.id}`),
-                        swapCount: cell.querySelector(`#s_${this.id}`)
+                        swapCount: cell.querySelector(`#s_${this.id}`),
+                        rankBadge: cell.querySelector(`#rank_${this.id}`)
                     };
 
                     this.updateVarOptions();
@@ -439,6 +441,7 @@
                 this.totalSwaps = 0;
                 this.statusMode = "";
                 this.verifiedIdx = -1;
+                if (this.dom.rankBadge) this.dom.rankBadge.style.display = 'none';
                 this.upStats();
                 this.resizeCanvas();
             }
@@ -462,11 +465,17 @@
             }
 
             upStats() {
-                if (this.dom.compCount) this.dom.compCount.textContent = this.totalComps.toLocaleString();
+                if (this.dom.compCount) {
+                    this.dom.compCount.textContent = this.totalComps.toLocaleString();
+                    this.dom.compCount.style.color = this.statusMode === "done" ? "#000000" : "";
+                }
                 if (this.dom.swapCount) this.dom.swapCount.textContent = this.totalSwaps.toLocaleString();
             }
 
             col(v, i) {
+                if (this.statusMode === "done") {
+                    return '#000000';
+                }
                 if (this.statusMode === "vf") {
                     if (i <= this.verifiedIdx) return '#2ea043';
                 }
@@ -575,7 +584,7 @@
                 const mergeIter = async () => { let n = arr.length; for (let s = 1; s < n; s *= 2) { for (let l = 0; l < n - 1; l += 2 * s) { let m = Math.min(l + s - 1, n - 1), r = Math.min(l + 2 * s - 1, n - 1), left = arr.slice(l, m + 1), right = arr.slice(m + 1, r + 1), i = 0, j = 0, k = l; while (i < left.length && j < right.length) { if (stopSrt) return; await tC(l + i, m + 1 + j); if (left[i] <= right[j]) { arr[k] = left[i++]; } else { arr[k] = right[j++]; } await tS(k, k); k++; } while (i < left.length) { if (stopSrt) return; arr[k] = left[i++]; await tS(k, k); k++; } while (j < right.length) { if (stopSrt) return; arr[k] = right[j++]; await tS(k, k); k++; } } } };
                 const mergeInP = async () => { const mIn = async (l, m, r) => { let i = l, j = m + 1; while (i <= m && j <= r) { if (stopSrt) return; await tC(i, j); if (arr[i] <= arr[j]) i++; else { let v = arr[j], idx = j; while (idx !== i) { arr[idx] = arr[idx - 1]; await tS(idx, idx - 1); idx--; } arr[i] = v; await tS(i, i); i++; m++; j++; } } }; const ms = async (l, r) => { if (l < r && !stopSrt) { let m = Math.floor((l + r) / 2); await ms(l, m); await ms(m + 1, r); await mIn(l, m, r); } }; await ms(0, arr.length - 1); };
                 const mergeWeave = async () => { const weave = async (l, r) => { if (r - l < 1 || stopSrt) return; let m = Math.floor((l + r) / 2); await weave(l, m); await weave(m + 1, r); let temp = []; for (let i = l, j = m + 1; i <= m || j <= r;) { if (i <= m) temp.push(arr[i++]); if (j <= r) temp.push(arr[j++]); } for (let k = 0; k < temp.length; k++) { arr[l + k] = temp[k]; await tS(l + k, l + k); } await insert(l, r); }; await weave(0, arr.length - 1); };
-                const timSort = async () => { const RUN = 16, n = arr.length; for (let i = 0; i < n; i += RUN) await insert(i, Math.min(i + RUN - 1, n - 1)); for (let size = RUN; size < n; size = 2 * size) { for (let left = 0; left < n; left += 2 * size) { let mid = left + size - 1, right = Math.min(left + 2 * size - 1, n - 1); if (mid < right) { let temp = [], i = left, j = mid + 1; while (i <= mid && j <= right) { if (stopSrt) return; await tC(i, j); if (arr[i] <= arr[j]) temp.push(arr[i++]); else temp.push(arr[j++]); } while (i <= mid) temp.push(arr[i++]); while (j <= right) temp.push(arr[j++]); for (let k = 0; k < temp.length; k++) { arr[left + k] = temp[k]; await tS(left + k, left + k); } } } } };
+                const timSort = async () => { const RUN = 16, n = arr.length; for (let i = 0; i < n; i += RUN) await insert(i, Math.min(i + RUN - 1, n - 1)); for (let size = RUN; size < n; size = 2 * size) { for (let left = 0; left < n; left += 2 * size) { let mid = left + size - 1, right = Math.min(left + 2 * size - 1, n - 1); if (mid < right) { let temp = [], i = left, j = mid + 1; while (i <= mid && j <= right) { if (stopSrt) return; await tC(i, j); if (arr[i] <= arr[j]) temp.push(arr[i++]); else temp.push(arr[j++]); } while (i <= mid) temp.push(arr[i++]); while (j <= right) temp.push(arr[right]); for (let k = 0; k < temp.length; k++) { arr[left + k] = temp[k]; await tS(left + k, left + k); } } } } };
                 const strandSort = async () => { let ip = [...arr], op = []; while (ip.length > 0 && !stopSrt) { let sub = [ip.shift()]; for (let i = 0; i < ip.length;) { await tC(i, i); if (ip[i] >= sub[sub.length - 1]) { sub.push(ip.splice(i, 1)[0]); } else i++; } if (op.length === 0) op = sub; else { let temp = [], i = 0, j = 0; while (i < op.length && j < sub.length) { await tC(i, j); if (op[i] <= sub[j]) temp.push(op[i++]); else temp.push(sub[j++]); } while (i < op.length) temp.push(op[i++]); while (j < sub.length) temp.push(sub[j++]); op = temp; } for (let k = 0; k < op.length; k++) { arr[k] = op[k]; await tS(k, k); } } };
                 const quadSort = async () => { for (let i = 0; i < arr.length; i += 4) await insert(i, Math.min(i + 3, arr.length - 1)); for (let s = 4; s < arr.length; s *= 2) { for (let l = 0; l < arr.length; l += 2 * s) { let m = Math.min(l + s - 1, arr.length - 1), r = Math.min(l + 2 * s - 1, arr.length - 1); if (m < r) { let temp = [], i = l, j = m + 1; while (i <= m && j <= r) { await tC(i, j); if (arr[i] <= arr[j]) temp.push(arr[i++]); else temp.push(arr[j++]); } while (i <= m) temp.push(arr[i++]); while (j <= r) temp.push(arr[j++]); for (let k = 0; k < temp.length; k++) { arr[l + k] = temp[k]; await tS(l + k, l + k); } } } } };
                 const dropMergeSort = async () => { if (arr.length <= 1) return; let kept = [arr[0]], dropped = []; for (let i = 1; i < arr.length; i++) { if (stopSrt) return; await tC(i - 1, i); if (arr[i] >= kept[kept.length - 1]) kept.push(arr[i]); else dropped.push(arr[i]); } await helperInsertSort(dropped, 0); let i = 0, j = 0, k = 0; while (i < kept.length && j < dropped.length) { if (stopSrt) return; await tC(k, k); arr[k] = kept[i] <= dropped[j] ? kept[i++] : dropped[j++]; await tS(k, k); k++; } while (i < kept.length) { arr[k] = kept[i++]; await tS(k, k); k++; } while (j < dropped.length) { arr[k] = dropped[j++]; await tS(k, k); k++; } };
@@ -660,7 +669,13 @@
                         if (performance.now() - this.lastRenderTime > 16 || delayPerItem >= 10) this.rndr();
                         playTone(this.arr[i], i, instances.length); await new Promise(r => setTimeout(r, delayPerItem));
                     }
-                    this.statusMode = "done";
+                    if (!stopSrt) {
+                        this.statusMode = "done";
+                        if (this.dom.rankBadge) {
+                            this.dom.rankBadge.textContent = `#${globalRank++}`;
+                            this.dom.rankBadge.style.display = 'inline-block';
+                        }
+                    }
                 }
                 this.active = []; this.verifiedIdx = -1; this.rndr(); this.upStats();
             }
@@ -682,7 +697,6 @@
                 singleAlgControls.style.display = 'none';
                 singleStats.style.display = 'none';
 
-                // Calculate dynamically fitting grid columns and rows to fit screen size
                 const cols = Math.ceil(Math.sqrt(count));
                 const rows = Math.ceil(count / cols);
                 
@@ -856,6 +870,25 @@
         }
 
         const getDelay = () => parseFloat(spd.value);
+        const sleep = () => new Promise(resolve => setTimeout(resolve, getDelay()));
+        const zeroYield = () => new Promise(resolve => setTimeout(resolve, 0));
+
+        function toggleUI(disabled) {
+            shf.disabled = disabled;
+            srt.disabled = disabled;
+            pse.disabled = !disabled;
+            viewMode.disabled = disabled;
+            alg.disabled = disabled;
+            varSelect.disabled = disabled;
+            sz.disabled = disabled;
+            arrType.disabled = disabled;
+            instances.forEach(inst => {
+                if (inst.isGrid) {
+                    inst.dom.algSel.disabled = disabled;
+                    inst.dom.varSel.disabled = disabled;
+                }
+            });
+        }
 
         function init() {
             baseArray = makeArray(arrType.value, parseInt(sz.value));
@@ -909,6 +942,17 @@
             toggleUI(false);
         });
 
+        srt.addEventListener('click', async () => {
+            if (isSrt) return;
+            toggleUI(true); isSrt = true; stopSrt = false; isPaused = false;
+            globalRank = 1;
+
+            await Promise.all(instances.map(inst => inst.runAlgorithm()));
+
+            isSrt = false;
+            toggleUI(false);
+        });
+
         pse.addEventListener('click', () => {
             if (!isSrt) return;
             isPaused = !isPaused;
@@ -943,38 +987,6 @@
         spd.addEventListener('input', (e) => spdv.textContent = e.target.value);
         rb.addEventListener('input', (e) => rbv.textContent = e.target.value);
 
-        function zeroYield() { return new Promise(r => { const c = new MessageChannel(); c.port1.onmessage = () => r(); c.port2.postMessage(null); }); }
-
-        const sleep = async () => {
-            while (isPaused && !stopSrt) { await new Promise(r => setTimeout(r, 30)); }
-            if (stopSrt) return;
-            opsCount++;
-            if (getDelay() <= 1) return opsCount % 12 === 0 ? zeroYield() : Promise.resolve();
-            return new Promise(r => setTimeout(r, getDelay()));
-        };
-
-        function toggleUI(d) {
-            srt.disabled = shf.disabled = sz.disabled = rb.disabled = arrType.disabled = viewMode.disabled = d;
-            alg.disabled = varSelect.disabled = d && !isPaused;
-            pse.disabled = !d;
-            instances.forEach(inst => {
-                if (inst.isGrid) {
-                    inst.dom.algSel.disabled = d && !isPaused;
-                    inst.dom.varSel.disabled = d && !isPaused;
-                }
-            });
-        }
-
-        srt.addEventListener('click', async () => {
-            if (isSrt) return; isSrt = true; isPaused = false; pse.textContent = "Pause"; toggleUI(true); opsCount = 0;
-            
-            const promises = instances.map(inst => inst.runAlgorithm());
-            await Promise.all(promises);
-
-            isSrt = stopSrt = isPaused = false; pse.textContent = "Pause"; toggleUI(false);
-        });
-
-        // INITIALIZATION
         updateSingleVariants();
         createInstances();
     </script>
