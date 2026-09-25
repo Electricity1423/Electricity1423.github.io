@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Ultimate Sound Sorting Visualizer - Unlimited Grid Edition</title>
+    <title>Ultimate Sound Sorting Visualizer</title>
     <style>
         * { box-sizing: border-box; }
         html, body {
@@ -47,9 +47,10 @@
             font-weight: 600; 
             font-size: 12px; 
             color: #58a6ff; 
+            margin-bottom: 4px;
         }
         .stat-val { color: #f0f6fc; font-family: monospace; font-size: 12px; }
-        button, select, input[type="number"] { 
+        button, select, input[type="number"], input[type="text"] { 
             background: #21262d; 
             color: #c9d1d9; 
             border: 1px solid #363b42; 
@@ -64,6 +65,10 @@
             width: 65px;
             text-align: center;
             cursor: text;
+        }
+        input[type="text"] {
+            cursor: text;
+            width: 220px;
         }
         button:hover:not(:disabled), select:hover:not(:disabled) { background: #30363d; border-color: #8b949e; color: #fff; }
         button#srt { background: #238636; color: #fff; border-color: #2ea043; }
@@ -157,7 +162,7 @@
     </style>
 </head>
 <body>
-    <h1>Ultimate Sound Sorting Visualizer</h1>
+    <h1>Electricity1423's Sorting Algorithm Visualizer</h1>
     <div class="controls">
         <button id="shf">Shuffle</button>
         <button id="srt">Sort</button>
@@ -206,7 +211,7 @@
             </select>
             <label>Vol: <input type="range" id="vol" min="0" max="100" value="50"><span id="volv" class="val-display">50%</span></label>
         </div>
-        <label>Size: <input type="number" id="sz" min="8" max="512" value="96"></label>
+        <label>Array Size: <input type="number" id="sz" min="2" max="32768" value="100"></label>
         <label>Array: <select id="arrType">
             <option value="random">Random</option>
             <option value="nearly">Nearly Sorted</option>
@@ -217,13 +222,21 @@
             <option value="saw">Sawtooth Pattern</option>
             <option value="sine">Sine Wave Pattern</option>
             <option value="step">Stepped Blocks</option>
+            <option value="custom">Custom (Code/Array)</option>
         </select></label>
+        <label id="customCodeLabel" class="hidden">Custom Array: <input type="text" id="customCodeInput" placeholder="[50, 10, 80, 20] or numbers" value="[50, 10, 80, 20, 60, 30, 90, 40]"></label>
         <label>Delay: <input type="range" id="spd" min="0.1" max="100" step="0.1" value="8"><span id="spdv" class="val-display">8</span></label>
         <label id="rbl" class="hidden">Base: <input type="range" id="rb" min="2" max="16" value="4"><span id="rbv" class="val-display">4</span></label>
     </div>
-    <div class="stats" id="singleStats">
-        <div>Comparisons: <span id="compCount" class="stat-val">0</span></div>
-        <div>Swaps / Writes: <span id="swapCount" class="stat-val">0</span></div>
+    
+    <div style="display: flex; gap: 8px;">
+        <div class="stats">
+            <div>FPS: <span id="fpsCount" class="stat-val">0</span></div>
+        </div>
+        <div class="stats" id="singleStats">
+            <div>Comparisons: <span id="compCount" class="stat-val">0</span></div>
+            <div>Swaps / Writes: <span id="swapCount" class="stat-val">0</span></div>
+        </div>
     </div>
 
     <div class="canvas-container" id="container"></div>
@@ -233,7 +246,19 @@
         const alg = document.getElementById('alg'), varSelect = document.getElementById('varSelect'), viewMode = document.getElementById('viewMode'), singleAlgControls = document.getElementById('singleAlgControls');
         const md = document.getElementById('md'), clr = document.getElementById('clr'), sz = document.getElementById('sz'), spd = document.getElementById('spd'), rb = document.getElementById('rb'), rbv = document.getElementById('rbv'), rbl = document.getElementById('rbl'), snd = document.getElementById('snd');
         const scl = document.getElementById('scl'), panMode = document.getElementById('panMode'), vol = document.getElementById('vol'), volv = document.getElementById('volv');
-        const arrType = document.getElementById('arrType'), spdv = document.getElementById('spdv'), compCount = document.getElementById('compCount'), swapCount = document.getElementById('swapCount'), singleStats = document.getElementById('singleStats');
+        const arrType = document.getElementById('arrType'), customCodeLabel = document.getElementById('customCodeLabel'), customCodeInput = document.getElementById('customCodeInput'), spdv = document.getElementById('spdv'), compCount = document.getElementById('compCount'), swapCount = document.getElementById('swapCount'), singleStats = document.getElementById('singleStats'), fpsCount = document.getElementById('fpsCount');
+
+        let lastFpsTime = performance.now(), frameCount = 0;
+        function updateFPS(now) {
+            frameCount++;
+            if (now - lastFpsTime >= 500) {
+                if (fpsCount) fpsCount.textContent = Math.round((frameCount * 1000) / (now - lastFpsTime));
+                frameCount = 0;
+                lastFpsTime = now;
+            }
+            requestAnimationFrame(updateFPS);
+        }
+        requestAnimationFrame(updateFPS);
 
         const ALG_OPTIONS = `
             <optgroup label="Exchange & Bubble">
@@ -243,18 +268,18 @@
                 <option value="crc">Circle Sort</option>
             </optgroup>
             <optgroup label="Selection & Insertion">
-                <option value="s">Selection</option>
-                <option value="i">Insertion</option>
-                <option value="cyc">Cycle</option>
-                <option value="pnk">Pancake</option>
+                <option value="s">Selection Sort</option>
+                <option value="i">Insertion Sort</option>
+                <option value="cyc">Cycle Sort</option>
+                <option value="pnk">Pancake Sort</option>
                 <option value="bingo">Bingo Sort</option>
                 <option value="patience">Patience Sort</option>
                 <option value="tree">Binary Search Tree Sort</option>
                 <option value="tourn">Tournament (Tree Selection)</option>
             </optgroup>
             <optgroup label="Divide & Conquer / Merge">
-                <option value="q">Quick</option>
-                <option value="m">Merge</option>
+                <option value="q">Quick Sort</option>
+                <option value="m">Merge Sort</option>
                 <option value="strand">Strand Sort</option>
                 <option value="quad">Quadsort</option>
                 <option value="drop">Drop-Merge Sort</option>
@@ -270,10 +295,10 @@
                 <option value="treapsort">Treap Sort (Randomized BST)</option>
             </optgroup>
             <optgroup label="Distribution & Non-Comparison">
-                <option value="cnt">Counting</option>
-                <option value="bkt">Bucket</option>
-                <option value="r">Radix</option>
-                <option value="g">Gravity (Bead)</option>
+                <option value="cnt">Counting Sort</option>
+                <option value="bkt">Bucket Sort</option>
+                <option value="r">Radix Sort</option>
+                <option value="g">Gravity Sort (Bead Sort)</option>
                 <option value="pigeon">Pigeonhole Sort</option>
                 <option value="flash">Flashsort</option>
                 <option value="flag">American Flag Sort</option>
@@ -286,7 +311,7 @@
                 <option value="oem">Odd-Even Mergesort</option>
                 <option value="pw">Pairwise Sorting Network</option>
                 <option value="shear">Shear Sort (2D Mesh)</option>
-                <option value="bosenelson">Bose-Nelson Network</option>
+                <option value="bosenelson">Bose-Nelson Network Sort</option>
             </optgroup>
             <optgroup label="Esoteric & Joke">
                 <option value="bg">Bogo & Esoteric</option>
@@ -472,7 +497,7 @@
                 if (this.dom.swapCount) this.dom.swapCount.textContent = this.totalSwaps.toLocaleString();
             }
 
-            col(v, i) {
+            col(v, i, maxVal) {
                 if (this.statusMode === "done") {
                     return '#000000';
                 }
@@ -482,7 +507,7 @@
                 if (this.active.includes(i)) {
                     return this.statusMode === "sw" ? '#ffffff' : '#f85149';
                 }
-                return clr.value === 'white' ? '#e6edf3' : `hsl(${(v/parseInt(sz.value))*360},100%,50%)`;
+                return clr.value === 'white' ? '#e6edf3' : `hsl(${(v/maxVal)*360},100%,50%)`;
             }
 
             rndr() {
@@ -494,14 +519,16 @@
 
                 ctx.clearRect(0, 0, width, height);
                 const m = md.value, len = this.arr.length, cX = width/2, cY = height/2, r = Math.max(5, Math.min(width, height)/2 - 5);
+                const maxVal = Math.max(...this.arr, parseInt(sz.value) || 1, 1);
+
                 for (let i = 0; i < len; i++) {
-                    ctx.fillStyle = this.col(this.arr[i], i);
+                    ctx.fillStyle = this.col(this.arr[i], i, maxVal);
                     if (m === 'cc') { ctx.beginPath(); ctx.moveTo(cX, cY); ctx.arc(cX, cY, r, i*(2*Math.PI)/len - Math.PI/2, (i+1)*(2*Math.PI)/len - Math.PI/2); ctx.fill(); }
-                    else if (m === 'cl') { const w = width/len, h = ((this.arr[i]+1)/parseInt(sz.value))*(height-5); ctx.fillRect(i*w, height-h, Math.max(0.5, w), h); }
-                    else if (m === 'pyr') { const w = width/len, h = ((this.arr[i]+1)/parseInt(sz.value))*(height-5)/2; ctx.fillRect(i*w, cY - h, Math.max(0.5, w), h * 2); }
-                    else if (m === 'dt') { const s = width/len, x = i*s + s/2, y = height - (((this.arr[i]+1)/parseInt(sz.value))*(height-10)) - 5; ctx.beginPath(); ctx.arc(x, y, Math.max(1, Math.min(4, 200/len)), 0, 2*Math.PI); ctx.fill(); }
-                    else if (m === 'dc') { const d = ((this.arr[i]+1)/parseInt(sz.value))*r, a = i*(2*Math.PI)/len - Math.PI/2; ctx.beginPath(); ctx.arc(cX + d*Math.cos(a), cY + d*Math.sin(a), Math.max(1, Math.min(4, 200/len)), 0, 2*Math.PI); ctx.fill(); }
-                    else if (m === 'stb') { const d = ((this.arr[i]+1)/parseInt(sz.value))*r, a = i*(2*Math.PI)/len - Math.PI/2; ctx.beginPath(); ctx.moveTo(cX, cY); ctx.lineTo(cX + d*Math.cos(a), cY + d*Math.sin(a)); ctx.strokeStyle = this.col(this.arr[i], i); ctx.lineWidth = Math.max(0.5, (2*Math.PI*r)/len); ctx.stroke(); }
+                    else if (m === 'cl') { const w = width/len, h = ((this.arr[i]+1)/maxVal)*(height-5); ctx.fillRect(i*w, height-h, Math.max(0.5, w), h); }
+                    else if (m === 'pyr') { const w = width/len, h = ((this.arr[i]+1)/maxVal)*(height-5)/2; ctx.fillRect(i*w, cY - h, Math.max(0.5, w), h * 2); }
+                    else if (m === 'dt') { const s = width/len, x = i*s + s/2, y = height - (((this.arr[i]+1)/maxVal)*(height-10)) - 5; ctx.beginPath(); ctx.arc(x, y, Math.max(1, Math.min(4, 200/len)), 0, 2*Math.PI); ctx.fill(); }
+                    else if (m === 'dc') { const d = ((this.arr[i]+1)/maxVal)*r, a = i*(2*Math.PI)/len - Math.PI/2; ctx.beginPath(); ctx.arc(cX + d*Math.cos(a), cY + d*Math.sin(a), Math.max(1, Math.min(4, 200/len)), 0, 2*Math.PI); ctx.fill(); }
+                    else if (m === 'stb') { const d = ((this.arr[i]+1)/maxVal)*r, a = i*(2*Math.PI)/len - Math.PI/2; ctx.beginPath(); ctx.moveTo(cX, cY); ctx.lineTo(cX + d*Math.cos(a), cY + d*Math.sin(a)); ctx.strokeStyle = this.col(this.arr[i], i, maxVal); ctx.lineWidth = Math.max(0.5, (2*Math.PI*r)/len); ctx.stroke(); }
                 }
             }
 
@@ -602,7 +629,7 @@
                 const bucket = async () => { let n = arr.length, max = Math.max(...arr), numB = Math.floor(Math.sqrt(n)), bkts = Array.from({length: numB}, () => []); for (let i = 0; i < n; i++) { await tC(i, i); let bIdx = Math.min(numB - 1, Math.floor((arr[i] / (max + 1)) * numB)); bkts[bIdx].push(arr[i]); } let idx = 0; for (let b = 0; b < numB; b++) { await helperInsertSort(bkts[b], idx); for (let v of bkts[b]) { arr[idx] = v; await tS(idx, idx); idx++; } } };
                 const radixLSD = async () => { let max = Math.max(...arr), b = parseInt(rb.value); for (let exp = 1; Math.floor(max / exp) > 0; exp *= b) { let output = new Array(arr.length), cnt = new Array(b).fill(0); for (let i = 0; i < arr.length; i++) { await tC(i, i); cnt[Math.floor(arr[i] / exp) % b]++; } for (let i = 1; i < b; i++) cnt[i] += cnt[i - 1]; for (let i = arr.length - 1; i >= 0; i--) { let digit = Math.floor(arr[i] / exp) % b; output[cnt[digit] - 1] = arr[i]; cnt[digit]--; } for (let i = 0; i < arr.length; i++) { arr[i] = output[i]; await tS(i, i); } } };
                 const radixMSD = async () => { const msd = async (l, r, exp, base) => { if (l >= r || exp <= 0) return; let cnt = new Array(base + 1).fill(0), out = new Array(r - l + 1); for (let i = l; i <= r; i++) { await tC(i, i); cnt[Math.floor(arr[i] / exp) % base + 1]++; } for (let i = 1; i <= base; i++) cnt[i] += cnt[i - 1]; for (let i = l; i <= r; i++) { let d = Math.floor(arr[i] / exp) % base; out[cnt[d]++] = arr[i]; } for (let i = 0; i < out.length; i++) { arr[l + i] = out[i]; await tS(l + i, l + i); } for (let i = 0; i < base; i++) { let sl = (i === 0) ? l : l + cnt[i - 1], sr = l + cnt[i] - 1; if (sl < sr) await msd(sl, sr, Math.floor(exp / base), base); } }; let max = Math.max(...arr), base = parseInt(rb.value), exp = 1; while (Math.floor(max / exp) >= base) exp *= base; await msd(0, arr.length - 1, exp, base); };
-                const gravity = async () => { let n = arr.length, maxVal = Math.max(...arr), beads = Array.from({length: n}, () => new Uint8Array(maxVal + 1)); for (let i = 0; i < n; i++) for (let j = 0; j < arr[i]; j++) beads[i][j] = 1; for (let j = 0; j < maxVal; j++) { let sum = 0; for (let i = 0; i < n; i++) { if (stopSrt) return; await tC(i, i); sum += beads[i][j]; beads[i][j] = 0; } for (let i = n - sum; i < n; i++) beads[i][j] = 1; } for (let i = 0; i < n; i++) { let val = 0; for (let j = 0; j < maxVal; j++) val += beads[i][j]; arr[i] = val; await tS(i, i); } };
+                const gravity = async () => { let n = arr.length, maxVal = Math.max(...arr), beads = Array.from({length: n}, () => new Uint2Array(maxVal + 1)); for (let i = 0; i < n; i++) for (let j = 0; j < arr[i]; j++) beads[i][j] = 1; for (let j = 0; j < maxVal; j++) { let sum = 0; for (let i = 0; i < n; i++) { if (stopSrt) return; await tC(i, i); sum += beads[i][j]; beads[i][j] = 0; } for (let i = n - sum; i < n; i++) beads[i][j] = 1; } for (let i = 0; i < n; i++) { let val = 0; for (let j = 0; j < maxVal; j++) val += beads[i][j]; arr[i] = val; await tS(i, i); } };
                 const pigeonholeSort = async () => { let min = Math.min(...arr), max = Math.max(...arr), range = max - min + 1, holes = Array.from({length: range}, () => []); for (let i = 0; i < arr.length; i++) { await tC(i, i); holes[arr[i] - min].push(arr[i]); } let idx = 0; for (let h = 0; h < range; h++) { for (let v of holes[h]) { arr[idx] = v; await tS(idx, idx); idx++; } } };
                 const flashsort = async () => { let n = arr.length, m = Math.floor(0.43 * n), min = Math.min(...arr), maxIdx = 0; for (let i = 1; i < n; i++) { await tC(i, maxIdx); if (arr[i] > arr[maxIdx]) maxIdx = i; } if (arr[maxIdx] === min) return; let c1 = (m - 1) / (arr[maxIdx] - min), L = new Array(m).fill(0); for (let i = 0; i < n; i++) L[Math.floor(c1 * (arr[i] - min))]++; for (let k = 1; k < m; k++) L[k] += L[k - 1]; let count = 0, j = 0, k = m - 1; while (count < n - 1) { while (j > L[k] - 1) { j++; k = Math.floor(c1 * (arr[j] - min)); } let ev = arr[j]; while (j !== L[k]) { k = Math.floor(c1 * (ev - min)); let hold = arr[L[k] - 1]; arr[L[k] - 1] = ev; await tS(L[k] - 1, j); ev = hold; L[k]--; count++; } } await insert(0, n - 1); };
                 const americanFlagSort = async () => { await radixMSD(); };
@@ -790,8 +817,8 @@
                 if (getDelay() <= 1 && Math.random() > 0.25) return;
                 initAudio();
 
-                const total = parseInt(sz.value) || 96;
-                const freq = getPitchFrequency(v, total);
+                const maxVal = baseArray.length > 0 ? Math.max(...baseArray, 1) : (parseInt(sz.value) || 96);
+                const freq = getPitchFrequency(v, maxVal);
                 const now = audioCtx.currentTime;
 
                 const osc = audioCtx.createOscillator();
@@ -811,7 +838,7 @@
 
                 if (panMode.value === 'stereo' && audioCtx.createStereoPanner) {
                     const panner = audioCtx.createStereoPanner();
-                    const panVal = Math.max(-1, Math.min(1, (index / (total - 1)) * 2 - 1));
+                    const panVal = Math.max(-1, Math.min(1, (index / Math.max(1, baseArray.length - 1)) * 2 - 1));
                     panner.pan.setValueAtTime(panVal, now);
                     osc.connect(noteGain);
                     noteGain.connect(panner);
@@ -835,7 +862,27 @@
             rbl.className = key === 'r' ? '' : 'hidden';
         }
 
+        function parseCustomArray(str) {
+            if (!str || !str.trim()) return null;
+            str = str.trim();
+            try {
+                let evalResult = new Function(`"use strict"; return (${str});`)();
+                if (Array.isArray(evalResult)) return evalResult.map(v => Number(v));
+            } catch (e) {
+                let parts = str.replace(/[\[\]]/g, '').split(/[\s,]+/);
+                let nums = parts.map(x => parseFloat(x)).filter(x => !isNaN(x));
+                if (nums.length > 0) return nums;
+            }
+            return null;
+        }
+
         function makeArray(type, n) {
+            if (type === "custom") {
+                let custom = parseCustomArray(customCodeInput.value);
+                if (custom && custom.length > 0) return custom;
+                return Array.from({length: n}, (_, i) => i);
+            }
+
             let a = Array.from({length: n}, (_, i) => i);
             if (type === "random") {
                 for (let i = n - 1; i > 0; i--) {
@@ -882,6 +929,7 @@
             varSelect.disabled = disabled;
             sz.disabled = disabled;
             arrType.disabled = disabled;
+            customCodeInput.disabled = disabled;
             instances.forEach(inst => {
                 if (inst.isGrid) {
                     inst.dom.algSel.disabled = disabled;
@@ -892,8 +940,11 @@
 
         function init() {
             let n = parseInt(sz.value) || 96;
-            if (n < 8) n = 8;
+            if (n < 2) n = 2;
             baseArray = makeArray(arrType.value, n);
+            if (arrType.value === "custom") {
+                sz.value = baseArray.length;
+            }
             instances.forEach(inst => inst.reset(baseArray));
         }
 
@@ -901,7 +952,7 @@
             if (isSrt) { stopSrt = true; isPaused = false; pse.textContent = "Pause"; pse.disabled = true; return; }
             toggleUI(true); isSrt = true;
             let n = parseInt(sz.value) || 96;
-            if (n < 8) n = 8;
+            if (n < 2) n = 2;
             const type = arrType.value;
 
             let tempArr = [];
@@ -922,8 +973,8 @@
                 }
             } else {
                 const target = makeArray(type, n);
-                tempArr = new Array(n);
-                for (let i = 0; i < n; i++) {
+                tempArr = new Array(target.length);
+                for (let i = 0; i < target.length; i++) {
                     if (stopSrt) break;
                     tempArr[i] = target[i];
                     instances.forEach(inst => {
@@ -986,7 +1037,17 @@
 
         md.addEventListener('change', () => instances.forEach(i => i.rndr()));
         clr.addEventListener('change', () => instances.forEach(i => i.rndr()));
-        arrType.addEventListener('change', () => { if (!isSrt) init(); });
+        
+        arrType.addEventListener('change', () => { 
+            if (arrType.value === "custom") {
+                customCodeLabel.classList.remove('hidden');
+            } else {
+                customCodeLabel.classList.add('hidden');
+            }
+            if (!isSrt) init(); 
+        });
+
+        customCodeInput.addEventListener('change', () => { if (!isSrt && arrType.value === "custom") init(); });
         sz.addEventListener('input', () => { if (!isSrt) init(); });
         spd.addEventListener('input', (e) => spdv.textContent = e.target.value);
         rb.addEventListener('input', (e) => rbv.textContent = e.target.value);
