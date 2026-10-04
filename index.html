@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Projects Dashboard</title>
+    <title>My Portfolio</title>
     <style>
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             margin: 0;
             padding: 40px 20px;
             background-color: #121212; 
@@ -19,21 +19,21 @@
         }
 
         h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
+            font-size: 2.2rem;
+            margin-bottom: 8px;
             text-align: center;
         }
 
         p {
-            color: #b3b3b3;
-            font-size: 1.1rem;
+            color: #a0a0a0;
+            font-size: 1rem;
             margin-bottom: 30px;
             text-align: center;
         }
         
         .button-container {
             display: flex;
-            gap: 20px; 
+            gap: 15px; 
             flex-wrap: wrap;
             justify-content: center;
         }
@@ -42,35 +42,33 @@
             display: inline-block;
             background-color: #007AFF; 
             color: white;
-            padding: 16px 32px;
+            padding: 14px 28px;
             text-decoration: none; 
-            border-radius: 12px; 
+            border-radius: 10px; 
             font-weight: 600;
-            font-size: 1.1rem;
-            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
-            transition: all 0.2s ease;
+            font-size: 1rem;
+            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.2);
+            transition: background 0.2s ease, transform 0.1s ease;
         }
 
         .btn-link:hover {
             background-color: #0063cc;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 122, 255, 0.5);
         }
 
         .btn-link:active {
-            transform: translateY(1px);
+            transform: scale(0.98);
         }
     </style>
 </head>
 <body>
 
     <h1>Project Showcase</h1>
-    <p>Tap a button below to launch one of my applications:</p>
+    <p>Select a system application below:</p>
     
     <div class="button-container">
-        <!-- Clean, hyphenated, space-free links -->
-        <a href="sort-visualiser.html" class="btn-link">Launch Sort Visualiser</a>
-        <a href="fastest-route.html" class="btn-link">Launch Fastest Route</a>
+        <!-- These contain absolutely zero spaces, uppercase letters, or special characters -->
+        <a href="sort-visualiser.html" class="btn-link">Sort Visualiser</a>
+        <a href="fastest-route.html" class="btn-link">Fastest Route</a>
     </div>
 
 </body>
