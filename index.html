@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Portfolio</title>
+    <title>ELECTRICITY</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -38,7 +38,7 @@
             justify-content: center;
         }
 
-        /* Styled button look */
+        /* Native Link Button Template */
         .btn-link {
             display: inline-block;
             background-color: #007AFF; 
@@ -49,7 +49,6 @@
             font-weight: 600;
             font-size: 1rem;
             box-shadow: 0 4px 12px rgba(0, 122, 255, 0.2);
-            cursor: pointer;
             transition: background 0.2s ease, transform 0.1s ease;
         }
 
@@ -68,18 +67,10 @@
     <p>Select a system application below:</p>
     
     <div class="button-container">
-        <!-- These call a clean cache-breaking function instead of a raw link -->
-        <div onclick="launchProject('sort-visualiser.html')" class="btn-link">Sort Visualiser</div>
-        <div onclick="launchProject('fastest-route.html')" class="btn-link">Fastest Route</div>
+        <!-- Pure native HTML links with no script blocks -->
+        <a href="sort-visualiser.html" class="btn-link">Sort Visualiser</a>
+        <a href="fastest-route.html" class="btn-link">Fastest Route</a>
     </div>
-
-    <script>
-        // This function guarantees Safari completely ignores cached page errors
-        function launchProject(fileName) {
-            const freshUrl = fileName + "?v=" + new Date().getTime();
-            window.location.href = freshUrl;
-        }
-    </script>
 
 </body>
 </html>
