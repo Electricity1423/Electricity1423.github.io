@@ -1,0 +1,611 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Easy SoundFont Maker</title>
+<style>
+:root{color-scheme:dark;--bg:#101319;--panel:#1a202a;--line:#303a49;--accent:#42d6c5;--text:#edf3fa;--muted:#aab7c8}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px system-ui,-apple-system,Segoe UI,sans-serif}header{padding:22px max(16px,calc((100% - 1050px)/2));background:#151b24;border-bottom:1px solid var(--line)}h1{margin:0 0 5px;font-size:25px}header p{margin:0;color:var(--muted)}main{max-width:1050px;margin:auto;padding:18px;display:grid;gap:15px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:17px}.panel h2{font-size:18px;margin:0 0 12px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}.field{display:grid;gap:6px}label{color:var(--muted);font-size:13px}input,button,select{font:inherit;border-radius:9px;border:1px solid var(--line);padding:10px;background:#111720;color:var(--text);min-width:0}input[type=file]{width:100%}button{cursor:pointer;background:#263542}button.primary{background:var(--accent);color:#07211e;border-color:transparent;font-weight:750}button:disabled{opacity:.4;cursor:not-allowed}.actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:12px;align-items:center}.note{color:var(--muted);font-size:13px;line-height:1.5}.status{padding:10px 12px;background:#111720;border:1px solid var(--line);border-radius:10px;white-space:pre-wrap}.meter{height:7px;background:#0c1016;border-radius:8px;overflow:hidden;margin-top:9px}.meter span{display:block;height:100%;width:0;background:var(--accent)}footer{color:var(--muted);font-size:12px;text-align:center;padding:5px 18px 25px} .hidden{display:none}
+.inst{border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:12px;background:#141a23}
+.inst.dup{border-color:#c25b5b}
+.instHead{display:flex;flex-wrap:wrap;gap:10px;align-items:end}
+.warn{color:#ff9b9b;font-size:12px;margin-top:6px}
+.instAdd{gap:12px}
+.instAdd label{display:flex;gap:6px;align-items:center}
+.srow{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line);margin-top:10px}
+.srow:first-of-type{margin-top:12px}
+.srow .nm{flex:1 1 180px;min-width:0;overflow-wrap:anywhere}
+.srow .nm small{display:block;color:var(--muted)}
+.srow label{display:flex;gap:6px;align-items:center}
+.srow input[type=number],.instAdd input[type=number]{width:74px;padding:6px 8px}
+.srow button{padding:6px 10px}
+.rootname{color:var(--text);min-width:34px}
+.tools{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;align-items:end}
+.checkrow{display:flex;gap:8px;align-items:center;color:var(--text);font-size:15px}
+.checkrow input{width:auto}
+</style>
+</head>
+<body>
+<header>🎹 Easy SoundFont Maker<p>Create a SoundFont (SF2) with one or many instruments from audio samples (WAV, MP3, OGG, FLAC, etc.), or import an SFZ instrument.</p></header>
+<main>
+<section class="panel">
+<h2>1. Name your SoundFont</h2><div class="grid">
+<div class="field"><label for="sfname">SoundFont name</label><input id="sfname" value="My SoundFont" maxlength="80"></div>
+</div><p class="note">Every instrument you create in step 2 becomes its own preset in the SF2, with the MIDI program number you give it.</p>
+</section>
+<section class="panel">
+<h2>2. Instruments and samples</h2>
+<div class="tools">
+<div class="field"><label for="rate">Playback sample rate</label><select id="rate"><option value="keep">Keep source sample rate</option><option value="44100">44100 Hz</option><option value="22050">22050 Hz</option></select></div>
+<div class="field"><label>Leading silence</label><label class="checkrow"><input id="trim" type="checkbox" checked> Auto-trim to where the audio starts</label></div>
+<div class="field"><label>Root note</label><label class="checkrow"><input id="autoRoot" type="checkbox" checked> Auto-detect for new files</label></div>
+</div>
+<p class="note">Auto-detect reads a note name from the file name first (like <b>Piano_C4.wav</b> or <b>pad-f#3.wav</b>), then estimates the pitch from the audio. You can fix any root note by hand in the list below.</p>
+<div class="actions">
+<button class="primary" id="addInst">＋ Add instrument</button>
+<button id="quickBtn">⚡ One instrument per file…</button>
+<input id="quickAdd" class="hidden" type="file" accept="audio/*,.wav,.mp3,.ogg,.flac,.m4a,.aac,.webm" multiple>
+<button id="stopPreview" disabled>■ Stop preview</button>
+</div>
+<p class="note">“One instrument per file” lets you pick many files at once. Each file becomes its own instrument (named after the file) with its own program number.</p>
+<div id="instruments"></div>
+</section>
+<section class="panel">
+<h2>3. Import an SFZ instrument (optional)</h2>
+<div class="field"><label for="sfzFile">Choose an .sfz file</label><input id="sfzFile" type="file" accept=".sfz,text/plain"></div>
+<p class="note">After loading an SFZ file, select its referenced sample files using the picker below. They are added as a new instrument named after the SFZ file.</p>
+<div class="actions"><button id="loadSfz">Read SFZ</button><button id="matchFiles" disabled>Choose / match SFZ sample files</button></div>
+<div id="sfzInfo" class="status">No SFZ loaded.</div>
+<div class="field hidden" id="sfzPickerWrap"><label for="sfzSamples">Select sample files (multi-select)</label><input id="sfzSamples" type="file" accept="audio/*,.wav,.mp3,.ogg,.flac" multiple></div>
+</section>
+<section class="panel">
+<h2>4. Export</h2>
+<p class="note">Creates a standard RIFF SoundFont 2 (.sf2) with embedded PCM samples and one preset per instrument.</p>
+<div class="grid">
+<div class="field"><label for="chanMode">Channels</label><select id="chanMode"><option value="multi" selected>Different instrument per MIDI program (multi-timbral)</option><option value="same">Same instrument on every channel</option></select></div>
+<div class="field sameOpt hidden"><label for="sameInst">Instrument to play on all channels</label><select id="sameInst"></select></div>
+<div class="field sameOpt hidden"><label>Drum channel</label><label class="checkrow"><input id="sameDrum" type="checkbox" checked> Also use it on the drum channel (channel 10)</label></div>
+</div>
+<p class="note sameOpt hidden">The chosen instrument is written into every program number (0–127), so it plays no matter which program a channel selects. Other instruments are left out of the file. Channel 10 normally looks in the drum bank, so leave the box ticked if you want it to play there too.</p>
+<div class="grid" style="margin-top:12px">
+<div class="field"><label>Optional: pitch-only notes</label><label class="checkrow"><input id="pitchKeep" type="checkbox"> Keep the same length on every key</label></div>
+<div class="field keepOpt hidden"><label for="lowNote">Lowest note to generate (MIDI 0–127)</label><input id="lowNote" type="number" min="0" max="127" value="36"></div>
+<div class="field keepOpt hidden"><label for="highNote">Highest note to generate (MIDI 0–127)</label><input id="highNote" type="number" min="0" max="127" value="96"></div>
+<div class="field keepOpt hidden"><label for="noteStep">Generate a sample every…</label><select id="noteStep"><option value="1" selected>1 semitone (best quality, slowest)</option><option value="2">2 semitones</option><option value="3">3 semitones</option></select></div>
+</div>
+<p class="note keepOpt hidden">Off by default (standard SoundFont pitching, where speed changes with pitch). When on, the page builds a separate pitch-shifted copy of your sample for every key, each with the original length. Keys outside the range above fall back to normal SoundFont pitching. Notes far from the original sample sound best when you add several samples at different pitches, since each key is made from the nearest one.</p>
+<div class="actions"><button class="primary" id="export" disabled>⬇ Build and download SF2</button><button id="clear">Clear all samples</button></div>
+<div class="meter"><span id="progress"></span></div><p id="status" class="status">Ready. Add audio files to an instrument to begin.</p>
+<div id="downloadFallback" class="actions" style="margin-top:10px;"></div>
+</section>
+</main><footer>Runs locally in your browser. Your audio files are processed on this device and are not uploaded.</footer>
+<script>
+const $=id=>document.getElementById(id);
+let instruments=[], samples=[], uid=1, previewAudio=null, sfzText='', sfzName='', sfzRefs=[];
+const clamp=(v,a,b,d=a)=>{v=Math.round(+v);if(!isFinite(v))v=d;return Math.max(a,Math.min(b,v))};
+const setStatus=t=>{$('status').textContent=t};
+const u16=n=>{let a=new Uint8Array(2);new DataView(a.buffer).setUint16(0,n,true);return a};
+const u32=n=>{let a=new Uint8Array(4);new DataView(a.buffer).setUint32(0,n>>>0,true);return a};
+function cat(...arrays){let len=arrays.reduce((n,a)=>n+a.length,0),o=new Uint8Array(len),p=0;for(const a of arrays){o.set(a,p);p+=a.length}return o}
+function ascii(s){return Uint8Array.from([...s].map(c=>c.charCodeAt(0)&255))}
+function chunk(id,data){return cat(ascii(id),u32(data.length),data,data.length%2?new Uint8Array(1):new Uint8Array(0))}
+function list(type,...chunks){return chunk('LIST',cat(ascii(type),...chunks))}
+function fixed(s,n){let b=new Uint8Array(n);b.set(ascii(String(s).slice(0,n-1)));return b}
+function rec(fields){return cat(...fields)}
+const tick=()=>new Promise(r=>setTimeout(r,0));
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+const noteNames=['C','C♯','D','D♯','E','F','F♯','G','G♯','A','A♯','B'];
+function midiLabel(n){return `${noteNames[((n%12)+12)%12]}${Math.floor(n/12)-1}`}
+
+/* ---------- audio decoding ---------- */
+async function decodeAnyAudio(file){
+ const buf=await file.arrayBuffer();
+ const ctx=new (window.AudioContext||window.webkitAudioContext)();
+ let audioBuffer;
+ try {
+  audioBuffer = await ctx.decodeAudioData(buf);
+ } finally {
+  await ctx.close();
+ }
+ const channels = audioBuffer.numberOfChannels;
+ const rate = audioBuffer.sampleRate;
+ const length = audioBuffer.length;
+ const pcm = new Int16Array(length);
+ const chData = [];
+ for(let c=0; c<channels; c++) chData.push(audioBuffer.getChannelData(c));
+ for(let i=0; i<length; i++){
+  let sum = 0;
+  for(let c=0; c<channels; c++){
+   sum += chData[c][i];
+  }
+  let sample = sum / channels;
+  sample = Math.max(-1, Math.min(1, sample));
+  pcm[i] = Math.round(sample * 32767);
+ }
+ let out=pcm;
+ const trimBox=document.getElementById('trim');
+ if(!trimBox||trimBox.checked){
+  const thr=Math.round(32767*Math.pow(10,-54/20)); // about -54 dBFS
+  let start=0;
+  while(start<pcm.length&&Math.abs(pcm[start])<=thr)start++;
+  if(start<pcm.length){
+   start=Math.max(0,start-Math.round(rate*0.001)); // keep 1 ms so the attack isn't clipped
+   out=pcm.slice(start);
+  }
+ }
+ return {name: file.name, pcm: out, rate, channels: 1};
+}
+
+function detectPitchFromDecoded(audioBuffer){
+ const channelCount=audioBuffer.numberOfChannels;
+ const sr=audioBuffer.sampleRate;
+ const maxSamples=Math.min(Math.floor(sr*0.65),audioBuffer.length);
+ if(maxSamples<2048) throw Error('Audio file is too short to detect pitch reliably.');
+ const mono=new Float32Array(maxSamples);
+ for(let c=0;c<channelCount;c++){const ch=audioBuffer.getChannelData(c);for(let i=0;i<maxSamples;i++)mono[i]+=ch[i]/channelCount;}
+ let best=null;
+ const winSize=Math.min(8192,2**Math.floor(Math.log2(maxSamples)));
+ const offsets=[0,Math.min(Math.floor(sr*0.04),maxSamples-winSize),Math.min(Math.floor(sr*0.12),maxSamples-winSize)];
+ for(const offset of [...new Set(offsets)]){
+  const x=mono.slice(offset,offset+winSize);
+  let mean=0;for(let i=0;i<x.length;i++)mean+=x[i];mean/=x.length;
+  let rms=0;for(let i=0;i<x.length;i++){x[i]-=mean;rms+=x[i]*x[i];}
+  rms=Math.sqrt(rms/x.length);if(rms<0.003)continue;
+  const minLag=Math.max(2,Math.floor(sr/1500)),maxLag=Math.min(Math.floor(sr/35),Math.floor(x.length/2));
+  let bestLag=-1,bestCorr=-1;
+  const norms=new Float32Array(maxLag+2);
+  for(let lag=minLag;lag<=maxLag;lag++){
+   let corr=0,energyA=0,energyB=0;
+   for(let i=0;i<x.length-lag;i+=2){const a=x[i],b=x[i+lag];corr+=a*b;energyA+=a*a;energyB+=b*b;}
+   const norm=corr/Math.sqrt((energyA*energyB)||1);
+   norms[lag]=norm;
+   if(norm>bestCorr){bestCorr=norm;bestLag=lag;}
+  }
+  // A repeating note correlates at 2x, 3x… its period too, so take the FIRST strong peak
+  // (within 90% of the best) rather than the single highest one, which avoids octave-down errors.
+  if(bestLag>0){
+   for(let lag=minLag+1;lag<bestLag;lag++){
+    if(norms[lag]>=0.9*bestCorr&&norms[lag]>=norms[lag-1]&&norms[lag]>=norms[lag+1]){bestLag=lag;bestCorr=norms[lag];break;}
+   }
+  }
+  if(bestLag>0&&bestCorr>0.55){
+   const hz=sr/bestLag;
+   const midi=Math.round(69+12*Math.log2(hz/440));
+   if(midi>=0&&midi<=127){
+    const candidate={midi,hz,corr:bestCorr,rms};
+    if(!best||candidate.corr>best.corr)best=candidate;
+   }
+  }
+ }
+ if(!best)throw Error('Could not identify a clear pitch.');
+ return best;
+}
+
+
+function resample(s,newRate){
+ let n=Math.max(1,Math.round(s.pcm.length*newRate/s.rate)),o=new Int16Array(n);
+ for(let i=0;i<n;i++){let x=i*s.rate/newRate,a=Math.floor(x),b=Math.min(s.pcm.length-1,a+1),t=x-a;o[i]=Math.round(s.pcm[a]*(1-t)+s.pcm[b]*t)}
+ return {...s,pcm:o,rate:newRate}
+}
+
+
+/* ---------- root note guessing ---------- */
+function noteFromName(name){
+ const base=String(name).replace(/\.[^.]+$/,'');
+ const m=base.match(/(?:^|[^A-Za-z0-9])([A-Ga-g])([#b])?(-?\d)(?![0-9A-Za-z])/);
+ if(!m)return null;
+ const sem={C:0,D:2,E:4,F:5,G:7,A:9,B:11}[m[1].toUpperCase()]+(m[2]==='#'?1:m[2]==='b'?-1:0);
+ const n=(+m[3]+1)*12+sem;
+ return n>=0&&n<=127?n:null;
+}
+function pcmAsBuffer(s){const f=new Float32Array(s.pcm.length);for(let i=0;i<f.length;i++)f[i]=s.pcm[i]/32768;return{numberOfChannels:1,sampleRate:s.rate,length:f.length,getChannelData:()=>f}}
+function detectRoot(s){try{return detectPitchFromDecoded(pcmAsBuffer(s)).midi}catch(e){return null}}
+function guessRoot(s,fallback){
+ if($('autoRoot').checked){
+  const n=noteFromName(s.name);if(n!==null)return n;
+  const p=detectRoot(s);if(p!==null)return p;
+ }
+ return fallback;
+}
+
+/* ---------- instruments & samples ---------- */
+function freeProgram(){const used=new Set(instruments.map(i=>i.prog));for(let p=0;p<128;p++)if(!used.has(p))return p;return 0}
+function addInstrument(name){
+ const inst={id:uid++,name:String(name||`Instrument ${instruments.length+1}`).slice(0,19),prog:freeProgram(),nroot:60,vlo:1,vhi:127};
+ instruments.push(inst);return inst;
+}
+async function addFiles(inst,files){
+ let added=0,errors=[];
+ for(const f of files){
+  try{
+   setStatus(`Adding ${f.name} to "${inst.name||'Instrument'}"…`);
+   let s=await decodeAnyAudio(f);
+   s.id=uid++;s.iid=inst.id;
+   let a=inst.vlo,b=inst.vhi;if(a>b)[a,b]=[b,a];
+   s.vlo=a;s.vhi=b;
+   s.root=guessRoot(s,inst.nroot);
+   const rate=$('rate').value;
+   if(rate!=='keep'&&+rate!==s.rate) s=resample(s,+rate);
+   if(samples.some(o=>o.iid===s.iid&&o.name===s.name&&o.vlo===s.vlo&&o.vhi===s.vhi&&o.pcm.length===s.pcm.length)){errors.push(f.name+': already in this instrument with the same velocity layer');continue;}
+   samples.push(s);added++;
+  }catch(e){errors.push(f.name+': '+(e.message||String(e)))}
+ }
+ return {added,errors};
+}
+
+function sampleRow(s){
+ return `<div class="srow" data-sid="${s.id}"><div class="nm"><b>${esc(s.name)}</b><small>${s.pcm.length.toLocaleString()} frames · ${s.rate} Hz</small></div>
+<label>Root <input type="number" min="0" max="127" data-f="root" value="${s.root}"> <span class="rootname">${midiLabel(s.root)}</span></label>
+<label>Velocity <input type="number" min="1" max="127" data-f="vlo" value="${s.vlo}"> – <input type="number" min="1" max="127" data-f="vhi" value="${s.vhi}"></label>
+<button data-act="play" title="Preview this sample">▶</button><button data-act="detect" title="Detect root note from the audio">🎵 Detect</button><button data-act="rm-sample" title="Remove sample">✕</button></div>`;
+}
+function render(){
+ $('instruments').innerHTML=instruments.map(inst=>{
+  const rows=samples.filter(s=>s.iid===inst.id).map(sampleRow).join('')||'<p class="note" style="margin:12px 0 0">No samples yet. Click “＋ Add audio files”.</p>';
+  return `<div class="inst" data-iid="${inst.id}">
+<div class="instHead">
+<div class="field" style="flex:1 1 200px"><label>Instrument name</label><input data-f="name" value="${esc(inst.name)}" maxlength="19" placeholder="e.g. Piano, Strings, Bass"></div>
+<div class="field" style="width:150px"><label>MIDI program (0–127)</label><input type="number" min="0" max="127" data-f="prog" value="${inst.prog}"></div>
+<button data-act="rm-inst">Remove instrument</button>
+</div>
+<div class="warn hidden">⚠ Another instrument uses this program number. Give each instrument its own.</div>
+<div class="actions instAdd">
+<button class="primary" data-act="add">＋ Add audio files</button>
+<input class="ifiles hidden" type="file" accept="audio/*,.wav,.mp3,.ogg,.flac,.m4a,.aac,.webm" multiple>
+<label>Root if not detected <input type="number" min="0" max="127" data-f="nroot" value="${inst.nroot}"></label>
+<label>New samples’ velocity <input type="number" min="1" max="127" data-f="nvlo" value="${inst.vlo}"> – <input type="number" min="1" max="127" data-f="nvhi" value="${inst.vhi}"></label>
+</div>
+${rows}
+</div>`;
+ }).join('')||'<p class="note">No instruments yet. Click “＋ Add instrument”.</p>';
+ refreshSameSelect();markDuplicates();
+ $('export').disabled=!samples.length;
+}
+function markDuplicates(){
+ const cnt={};instruments.forEach(i=>cnt[i.prog]=(cnt[i.prog]||0)+1);
+ document.querySelectorAll('.inst').forEach(c=>{
+  const inst=instruments.find(x=>x.id==c.dataset.iid),d=!!inst&&cnt[inst.prog]>1;
+  c.classList.toggle('dup',d);c.querySelector('.warn').classList.toggle('hidden',!d);
+ });
+}
+function refreshSameSelect(){
+ const sel=$('sameInst'),cur=sel.value;
+ sel.innerHTML=instruments.map(i=>`<option value="${i.id}">${esc(i.name||'Instrument')} (program ${i.prog})</option>`).join('');
+ if([...sel.options].some(o=>o.value===cur))sel.value=cur;
+}
+
+/* ---------- list events ---------- */
+const fieldValue=t=>{
+ const row=t.closest('[data-sid]');
+ if(row){const s=samples.find(x=>x.id==row.dataset.sid);return s?s[t.dataset.f]:t.value}
+ const inst=instruments.find(x=>x.id==t.closest('[data-iid]').dataset.iid);
+ return inst?inst[{prog:'prog',nroot:'nroot',nvlo:'vlo',nvhi:'vhi'}[t.dataset.f]]:t.value;
+};
+$('instruments').addEventListener('input',e=>{
+ const t=e.target,f=t.dataset.f;if(!f)return;
+ const row=t.closest('[data-sid]');
+ if(row){
+  const s=samples.find(x=>x.id==row.dataset.sid);if(!s)return;
+  if(f==='root'){s.root=clamp(t.value,0,127,60);row.querySelector('.rootname').textContent=midiLabel(s.root)}
+  else if(f==='vlo')s.vlo=clamp(t.value,1,127,1);
+  else if(f==='vhi')s.vhi=clamp(t.value,1,127,127);
+  return;
+ }
+ const inst=instruments.find(x=>x.id==t.closest('[data-iid]').dataset.iid);if(!inst)return;
+ if(f==='name'){inst.name=t.value;refreshSameSelect()}
+ else if(f==='prog'){inst.prog=clamp(t.value,0,127,0);markDuplicates();refreshSameSelect()}
+ else if(f==='nroot')inst.nroot=clamp(t.value,0,127,60);
+ else if(f==='nvlo')inst.vlo=clamp(t.value,1,127,1);
+ else if(f==='nvhi')inst.vhi=clamp(t.value,1,127,127);
+});
+$('instruments').addEventListener('change',async e=>{
+ const t=e.target;
+ if(t.classList.contains('ifiles')){
+  const inst=instruments.find(x=>x.id==t.closest('[data-iid]').dataset.iid);
+  const files=[...t.files];t.value='';
+  if(!inst||!files.length)return;
+  const r=await addFiles(inst,files);
+  render();
+  setStatus((r.added?`Added ${r.added} file(s) to "${inst.name||'Instrument'}".`:'No samples added.')+(r.errors.length?'\n\nErrors:\n'+r.errors.join('\n'):''));
+  return;
+ }
+ if(t.type==='number'&&t.dataset.f)t.value=fieldValue(t); // show the clamped value
+});
+$('instruments').addEventListener('click',e=>{
+ const b=e.target.closest('button[data-act]');if(!b)return;
+ const act=b.dataset.act,card=b.closest('[data-iid]'),row=b.closest('[data-sid]');
+ if(act==='add'){card.querySelector('.ifiles').click();return}
+ if(act==='rm-inst'){
+  const id=+card.dataset.iid,n=samples.filter(s=>s.iid===id).length;
+  if(n&&!confirm(`Remove this instrument and its ${n} sample(s)?`))return;
+  samples=samples.filter(s=>s.iid!==id);instruments=instruments.filter(i=>i.id!==id);render();return;
+ }
+ const s=row&&samples.find(x=>x.id==row.dataset.sid);if(!s)return;
+ if(act==='rm-sample'){samples=samples.filter(x=>x!==s);render()}
+ else if(act==='play')playSample(s);
+ else if(act==='detect'){
+  const n=detectRoot(s);
+  if(n===null){setStatus(`Could not identify a clear pitch in ${s.name}. Set its root note by hand.`);return}
+  s.root=n;row.querySelector('[data-f="root"]').value=n;row.querySelector('.rootname').textContent=midiLabel(n);
+  setStatus(`Detected ${midiLabel(n)} (MIDI ${n}) for ${s.name}.`);
+ }
+});
+
+/* ---------- top buttons ---------- */
+$('addInst').onclick=()=>{
+ if(instruments.length>=128){setStatus('A SoundFont can have at most 128 instruments here (one per MIDI program).');return}
+ addInstrument();render();
+ const last=document.querySelector('.inst:last-child [data-f="name"]');if(last){last.focus();last.select()}
+};
+$('quickBtn').onclick=()=>$('quickAdd').click();
+$('quickAdd').onchange=async e=>{
+ const files=[...e.target.files];e.target.value='';if(!files.length)return;
+ let n=0,errs=[];
+ for(const f of files){
+  if(instruments.length>=128){errs.push(f.name+': limit of 128 instruments reached');continue}
+  const inst=addInstrument(f.name.replace(/\.[^.]+$/,''));
+  const r=await addFiles(inst,[f]);
+  if(r.added)n++;else instruments.splice(instruments.indexOf(inst),1);
+  errs.push(...r.errors);
+ }
+ render();
+ setStatus(`Created ${n} instrument(s), one per file.`+(errs.length?'\n\nErrors:\n'+errs.join('\n'):''));
+};
+$('clear').onclick=()=>{samples=[];render();setStatus('Samples cleared. Instruments were kept.');};
+$('chanMode').onchange=()=>{document.querySelectorAll('.sameOpt').forEach(e=>e.classList.toggle('hidden',$('chanMode').value!=='same'))};
+$('pitchKeep').onchange=()=>{document.querySelectorAll('.keepOpt').forEach(e=>e.classList.toggle('hidden',!$('pitchKeep').checked))};
+
+/* ---------- preview ---------- */
+function playSample(s){
+ stopPreview();
+ let buf=new ArrayBuffer(44+s.pcm.length*2),v=new DataView(buf);
+ const put=(p,t)=>{for(let i=0;i<t.length;i++)v.setUint8(p+i,t.charCodeAt(i))};
+ put(0,'RIFF');v.setUint32(4,buf.byteLength-8,true);put(8,'WAVEfmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,s.rate,true);v.setUint32(28,s.rate*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);put(36,'data');v.setUint32(40,s.pcm.length*2,true);
+ for(let i=0;i<s.pcm.length;i++)v.setInt16(44+i*2,s.pcm[i],true);
+ previewAudio=new Audio(URL.createObjectURL(new Blob([buf],{type:'audio/wav'})));
+ previewAudio.play();
+ $('stopPreview').disabled=false;
+ previewAudio.onended=()=>{$('stopPreview').disabled=true}
+}
+function stopPreview(){if(previewAudio){previewAudio.pause();previewAudio=null}$('stopPreview').disabled=true}
+$('stopPreview').onclick=stopPreview;
+
+/* ---------- SFZ import ---------- */
+$('loadSfz').onclick=async()=>{
+ let f=$('sfzFile').files[0];
+ if(!f){$('sfzInfo').textContent='Choose an SFZ file first.';return}
+ sfzText=await f.text();
+ sfzName=f.name;
+ sfzRefs=[...sfzText.matchAll(/\bsample\s*=\s*["']?([^\s"'<>]+)/gi)].map(m=>m[1]);
+ $('sfzInfo').textContent=`Loaded ${f.name}\nFound ${sfzRefs.length} sample reference(s).`;
+ $('matchFiles').disabled=!sfzRefs.length;
+ $('sfzPickerWrap').classList.toggle('hidden',!sfzRefs.length);
+};
+$('matchFiles').onclick=()=>$('sfzSamples').click();
+$('sfzSamples').onchange=async()=>{
+ const files=[...$('sfzSamples').files];$('sfzSamples').value='';
+ if(!files.length)return;
+ if(instruments.length>=128){setStatus('A SoundFont can have at most 128 instruments here.');return}
+ const inst=addInstrument((sfzName||'SFZ').replace(/\.[^.]+$/,''));
+ const r=await addFiles(inst,files);
+ if(!r.added)instruments.splice(instruments.indexOf(inst),1);
+ render();
+ setStatus(`Imported ${r.added} SFZ sample file(s)`+(r.added?` into "${inst.name}".`:'.')+(r.errors.length?'\n\nErrors:\n'+r.errors.join('\n'):''));
+};
+
+/* ---------- pitch-only generation ---------- */
+function pitchShiftKeepLength(pcm,ratio,rate){
+ const N=pcm.length,out=new Int16Array(N);
+ const x=new Float32Array(N);for(let i=0;i<N;i++)x[i]=pcm[i]/32768;
+ let win=Math.round(2048*rate/44100/2)*2;win=Math.max(256,win);
+ const hs=win/2,tol=Math.round(win/4);
+ const interp=(y,pos)=>{const a=Math.floor(pos);if(a<0||a>=y.length-1)return 0;const t=pos-a;return y[a]*(1-t)+y[a+1]*t};
+ let y;
+ if(N<win*3){
+  y=x; // too short to stretch: just resample
+ }else{
+  const PAD=2*win+tol+8,xp=new Float32Array(N+2*PAD);xp.set(x,PAD);
+  const w=new Float32Array(win);for(let i=0;i<win;i++)w[i]=0.5-0.5*Math.cos(2*Math.PI*i/win);
+  const M=Math.ceil(N*ratio),K=Math.ceil(M/hs)+1;
+  y=new Float32Array(K*hs+win);
+  const ha=hs/ratio,dec=8;
+  let prev=0;
+  for(let k=0;k<K;k++){
+   let pos;
+   if(k===0)pos=0;
+   else{
+    const nominal=Math.round(k*ha),refBase=PAD+prev+hs;
+    const score=p=>{let c=0,e=1e-9;const b=PAD+p;for(let i=0;i<win;i+=dec){const a=xp[b+i],r=xp[refBase+i];c+=a*r;e+=a*a}return c/Math.sqrt(e)};
+    let bestP=nominal,bestS=-Infinity;
+    for(let p=nominal-tol;p<=nominal+tol;p+=2){const s=score(p);if(s>bestS){bestS=s;bestP=p}}
+    const c0=bestP;for(let p=c0-1;p<=c0+1;p++){const s=score(p);if(s>bestS){bestS=s;bestP=p}}
+    pos=bestP;
+   }
+   const b=PAD+pos,o=k*hs;
+   for(let i=0;i<win;i++){
+    const wt=(k===0&&i<hs)?1:w[i]; // no fade-in on the very first frame
+    y[o+i]+=wt*xp[b+i];
+   }
+   prev=pos;
+  }
+ }
+ for(let i=0;i<N;i++){
+  let v=interp(y,i*ratio);
+  v=Math.max(-1,Math.min(1,v));
+  out[i]=Math.round(v*32767);
+ }
+ return out;
+}
+
+
+async function buildPitchedSamples(src){
+ let lo=Math.max(0,Math.min(127,Math.round(+$('lowNote').value)));
+ let hi=Math.max(0,Math.min(127,Math.round(+$('highNote').value)));
+ if(lo>hi)[lo,hi]=[hi,lo];
+ const step=Math.max(1,+$('noteStep').value||1);
+ const targets=[];for(let t=lo;t<=hi;t+=step)targets.push(t);
+ if(targets[targets.length-1]!==hi)targets.push(hi);
+ const out=[];
+ // one pool per instrument + velocity layer, so soft and loud samples stay separate
+ const poolKey=s=>`${s.iid}|${s.vlo}-${s.vhi}`;
+ const groups=[];src.forEach(s=>{const k=poolKey(s);if(!groups.includes(k))groups.push(k)});
+ const total=groups.length*targets.length;let done=0;
+ for(const g of groups){
+  const pool=src.filter(s=>poolKey(s)===g);
+  for(const t of targets){
+   let p=pool[0];
+   for(const s of pool){if(Math.abs(s.root-t)<Math.abs(p.root-t))p=s}
+   const base=p.name.replace(/\.[^.]+$/,'').slice(0,12);
+   const pcm=p.root===t?p.pcm:pitchShiftKeepLength(p.pcm,Math.pow(2,(t-p.root)/12),p.rate);
+   out.push({name:`${base}_${t}`,pcm,rate:p.rate,root:t,channels:1,iid:p.iid,inst:p.inst,prog:p.prog,vlo:p.vlo,vhi:p.vhi});
+   done++;
+   $('progress').style.width=Math.round(5+80*done/total)+'%';
+   setStatus(`Pitch-shifting notes… ${done} / ${total}`);
+   await tick();
+  }
+ }
+ return out;
+}
+
+/* ---------- SF2 writer ---------- */
+function makeSf2(samples,opts={}){
+ if(!samples.length)throw Error('Add at least one sample first.');
+ const zstr=t=>{let b=ascii(t+'\0');return b.length%2?cat(b,new Uint8Array(1)):b};
+ const info=list('INFO',chunk('ifil',cat(u16(2),u16(1))),chunk('isng',zstr('EMU8000')),chunk('INAM',zstr($('sfname').value||'My SoundFont')),chunk('ISFT',zstr('Easy SoundFont Maker')));
+
+ let pcmParts=[],shdr=[],samplePos=0;
+ for(let i=0;i<samples.length;i++){
+  const s=samples[i];
+  let arr=new Uint8Array(s.pcm.length*2+92); // 46 zero frames padding
+  let dv=new DataView(arr.buffer);
+  for(let j=0;j<s.pcm.length;j++) dv.setInt16(j*2,s.pcm[j],true);
+  pcmParts.push(arr);
+  shdr.push(rec([fixed(s.name.replace(/\.[^.]+$/,''),20),u32(samplePos),u32(samplePos+s.pcm.length),u32(samplePos+s.pcm.length),u32(samplePos+s.pcm.length),u32(s.rate),Uint8Array.of(Math.max(0,Math.min(127,s.root)),0),u16(0),u16(1)]));
+  samplePos+=s.pcm.length+46;
+ }
+ // EOS marker sample header
+ shdr.push(rec([fixed('EOS',20),u32(samplePos),u32(samplePos),u32(samplePos),u32(samplePos),u32(44100),Uint8Array.of(60,0),u16(0),u16(1)]));
+ const sdta=list('sdta',chunk('smpl',cat(...pcmParts)));
+
+ // instruments, in program order
+ const gid=[],gname={},gprog={};
+ samples.forEach(s=>{if(!gid.includes(s.iid)){gid.push(s.iid);gname[s.iid]=s.inst||'Instrument';gprog[s.iid]=Math.max(0,Math.min(127,s.prog|0))}});
+ if(opts.same&&gid.length>1)throw Error('More than one instrument was left in same-instrument mode.');
+ gid.sort((a,b)=>gprog[a]-gprog[b]);
+ if(!opts.same)for(let i=1;i<gid.length;i++)if(gprog[gid[i]]===gprog[gid[i-1]])throw Error(`"${gname[gid[i-1]]}" and "${gname[gid[i]]}" both use MIDI program ${gprog[gid[i]]}. Give each instrument its own program number.`);
+
+ const inst=[],ibag=[],igen=[];
+ gid.forEach(g=>{
+  inst.push(rec([fixed(gname[g],20),u16(ibag.length)]));
+  // samples with the same velocity range form a layer; each layer splits the keyboard by root note
+  const all=samples.map((s,i)=>i).filter(i=>samples[i].iid===g);
+  const layerKey=i=>`${samples[i].vlo||1}-${samples[i].vhi||127}`;
+  const layers=[];all.forEach(i=>{if(!layers.includes(layerKey(i)))layers.push(layerKey(i))});
+  layers.forEach(lk=>{
+   const [vl,vh]=lk.split('-').map(Number);
+   const idxs=all.filter(i=>layerKey(i)===lk).sort((a,b)=>samples[a].root-samples[b].root);
+   idxs.forEach((idx,k)=>{
+    let lo=k===0?0:Math.floor((samples[idxs[k-1]].root+samples[idx].root)/2)+1;
+    let hi=k===idxs.length-1?127:Math.floor((samples[idx].root+samples[idxs[k+1]].root)/2);
+    if(lo>hi)lo=hi;
+    ibag.push(rec([u16(igen.length),u16(0)]));
+    igen.push(rec([u16(43),Uint8Array.of(lo,hi)]));  // keyRange (must be first)
+    igen.push(rec([u16(44),Uint8Array.of(vl,vh)]));  // velRange (second)
+    igen.push(rec([u16(53),u16(idx)]));              // sampleID (must be last)
+   });
+  });
+ });
+ inst.push(rec([fixed('EOI',20),u16(ibag.length)]));
+ ibag.push(rec([u16(igen.length),u16(0)]));
+ igen.push(new Uint8Array(4));
+
+ // presets
+ const presets=[];
+ if(opts.same){
+  for(let p=0;p<128;p++)presets.push({name:gname[gid[0]],prog:p,bank:0,gi:0});
+  if(opts.drum)for(let p=0;p<128;p++)presets.push({name:gname[gid[0]],prog:p,bank:128,gi:0});
+ }else{
+  gid.forEach((g,gi)=>presets.push({name:gname[g],prog:gprog[g],bank:0,gi}));
+ }
+ presets.sort((a,b)=>a.bank-b.bank||a.prog-b.prog);
+ const phdr=[],pbag=[],pgen=[],pmod=[new Uint8Array(10)];
+ presets.forEach((p,k)=>{
+  phdr.push(rec([fixed(p.name,20),u16(p.prog),u16(p.bank),u16(k),u32(0),u32(0),u32(0)]));
+  pbag.push(rec([u16(pgen.length),u16(0)]));
+  pgen.push(rec([u16(41),u16(p.gi)])); // instrument generator
+ });
+ phdr.push(rec([fixed('EOP',20),u16(0),u16(0),u16(presets.length),u32(0),u32(0),u32(0)]));
+ pbag.push(rec([u16(pgen.length),u16(0)]));
+ pgen.push(new Uint8Array(4));
+
+ const pdta=list('pdta',
+  chunk('phdr',cat(...phdr)),
+  chunk('pbag',cat(...pbag)),
+  chunk('pmod',cat(...pmod)),
+  chunk('pgen',cat(...pgen)),
+  chunk('inst',cat(...inst)),
+  chunk('ibag',cat(...ibag)),
+  chunk('imod',cat(new Uint8Array(10))),
+  chunk('igen',cat(...igen)),
+  chunk('shdr',cat(...shdr))
+ );
+
+ const body=cat(ascii('sfbk'),info,sdta,pdta);
+ const result=cat(ascii('RIFF'),u32(body.length),body);
+ result.presetCount=presets.length;result.instrumentCount=gid.length;
+ return result;
+}
+
+/* ---------- export ---------- */
+function flatSamples(){
+ return samples.map(s=>{
+  const I=instruments.find(i=>i.id===s.iid);
+  let a=s.vlo,b=s.vhi;if(a>b)[a,b]=[b,a];
+  return {...s,inst:((I&&I.name)||'').trim().slice(0,19)||'Instrument',prog:I?I.prog:0,vlo:a,vhi:b};
+ });
+}
+$('export').onclick=async()=>{
+ const btn=$('export');btn.disabled=true;
+ try{
+  setStatus('Building SF2…');$('progress').style.width='5%';
+  await tick();
+  const same=$('chanMode').value==='same';
+  let src=flatSamples();
+  if(same){
+   const iid=+$('sameInst').value;
+   src=src.filter(s=>s.iid===iid);
+   if(!src.length)throw Error('The instrument chosen for all channels has no samples.');
+  }
+  const skipped=same?0:instruments.filter(i=>!samples.some(s=>s.iid===i.id)).length;
+  let list=src;
+  if($('pitchKeep').checked)list=await buildPitchedSamples(src);
+  setStatus('Writing SF2…');
+  await tick();
+  const bytes=makeSf2(list,{same,drum:$('sameDrum').checked});
+  $('progress').style.width='100%';
+
+  let blob=new Blob([bytes],{type:'application/octet-stream'});
+  let url=URL.createObjectURL(blob);
+  let filename=($('sfname').value||'My_SoundFont').replace(/[^\w -]/g,'').trim().replace(/\s+/g,'_')+'.sf2';
+
+  let a=document.createElement('a');
+  a.href=url;
+  a.download=filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+
+  $('downloadFallback').innerHTML = `<a href="${url}" download="${filename}" style="color:var(--accent);font-weight:bold;">📥 Click here if download didn't start automatically</a>`;
+  setStatus(`Successfully built ${filename}\n${bytes.instrumentCount} instrument(s) · ${bytes.presetCount} preset(s) · ${list.length} sample(s) · Size: ${(bytes.length/1024/1024).toFixed(2)} MB`+(skipped?`\n${skipped} instrument(s) with no samples were left out.`:''));
+  setTimeout(()=>URL.revokeObjectURL(url),60000);
+ }catch(e){
+  setStatus('Export failed: '+e.message);
+  $('progress').style.width='0%';
+ }finally{btn.disabled=!samples.length}
+};
+
+addInstrument('Piano');
+render();
+</script>
+</body>
+</html>
