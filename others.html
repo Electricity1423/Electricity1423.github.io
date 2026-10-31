@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>electricMIDI - Miscellaneous Suite</title>
+    <style>
+        /* Cyberpunk Dark Theme Styling */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #0b0c10;
+            color: #c5c6c7;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+            text-align: center;
+            background: #1f2833;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 1px solid #9933ff;
+        }
+
+        h1 {
+            font-size: 3rem;
+            color: #9933ff;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 15px rgba(153, 51, 255, 0.4);
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #66fcf1;
+            margin-bottom: 35px;
+            font-weight: 300;
+        }
+
+        /* Toolkit Layout Grid */
+        .tools-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        @media (min-width: 768px) {
+            .tools-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .full-width-card {
+                grid-column: span 2;
+            }
+        }
+
+        /* Tool Card Styles */
+        .tool-card {
+            background-color: #0b0c10;
+            border: 2px solid #1f2833;
+            border-radius: 10px;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .tool-card:hover {
+            transform: translateY(-4px);
+        }
+
+        /* Specific Card Borders */
+        .card-sfmaker { border-color: #ff3366; box-shadow: 0 4px 15px rgba(255, 51, 102, 0.1); }
+        .card-sortvis { border-color: #33ccff; box-shadow: 0 4px 15px rgba(51, 204, 255, 0.1); }
+        .card-midimaker { border-color: #ff0055; box-shadow: 0 4px 15px rgba(255, 0, 85, 0.1); }
+
+        .card-sfmaker:hover { border-color: #ff3366; box-shadow: 0 6px 25px rgba(255, 51, 102, 0.3); }
+        .card-sortvis:hover { border-color: #33ccff; box-shadow: 0 6px 25px rgba(51, 204, 255, 0.3); }
+        .card-midimaker:hover { border-color: #ff0055; box-shadow: 0 6px 25px rgba(255, 0, 85, 0.3); }
+
+        .tool-title {
+            font-size: 1.4rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+        
+        .sfmaker-title { color: #ff3366; }
+        .sortvis-title { color: #33ccff; }
+        .midimaker-title { color: #ff0055; }
+
+        .tool-desc {
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: #a4a7ab;
+            margin-bottom: 20px;
+        }
+
+        /* Universal Action Button configuration */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            max-width: 280px;
+            padding: 14px 24px;
+            font-size: 1rem;
+            font-weight: bold;
+            text-decoration: none;
+            border-radius: 6px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.2s ease;
+            color: #0b0c10;
+        }
+
+        .btn-sfmaker { background: linear-gradient(135deg, #ff0055, #ff3366); color: #fff; }
+        .btn-sortvis { background: linear-gradient(135deg, #0099ff, #33ccff); }
+        .btn-midimaker { background: linear-gradient(135deg, #ff0055, #ff5500); color: #fff; }
+        .btn-back { background: #333; color: #fff; border: 1px solid #555; max-width: 180px; padding: 10px 20px; margin-top: 10px;}
+
+        .btn:hover {
+            transform: scale(1.03);
+            filter: brightness(1.1);
+        }
+
+        .btn-back:hover {
+            background: #444;
+            border-color: #9933ff;
+            box-shadow: 0 0 10px rgba(153, 51, 255, 0.4);
+        }
+
+        /* Footer styling */
+        footer {
+            margin-top: 40px;
+            font-size: 0.8rem;
+            color: #4f5d73;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Miscellaneous Suite</h1>
+        <div class="subtitle">Secondary Labs & Auxiliary Web Utilities</div>
+        
+        <div class="tools-grid">
+            <!-- 1. SOUNDFONT MAKER CARD -->
+            <div class="tool-card card-sfmaker">
+                <div>
+                    <div class="tool-title sfmaker-title">🔊 SoundFont Maker</div>
+                    <p class="tool-desc">
+                        An experimental browser utility designed to compile instrument samples, unpack PCM WAV files, and organize custom sample mappings straight into compact `.sf2` patch arrays.
+                    </p>
+                </div>
+                <a href="/soundfont-maker.html" class="btn btn-sfmaker">Launch SF2 Maker</a>
+            </div>
+
+            <!-- 2. SORTING ALGORITHM VISUALIZER CARD -->
+            <div class="tool-card card-sortvis">
+                <div>
+                    <div class="tool-title sortvis-title">📊 Sorting Algorithm Visualizer</div>
+                    <p class="tool-desc">
+                        A math and computing visualization platform. Watch raw data patterns morph and track real-time telemetry array speeds across various classic sorting mechanics.
+                    </p>
+                </div>
+                <a href="/sort-visualiser.html" class="btn btn-sortvis">Open Sort Visualizer</a>
+            </div>
+
+            <!-- 3. NEW: BLACK MIDI MAKER CARD -->
+            <div class="tool-card full-width-card card-midimaker">
+                <div>
+                    <div class="tool-title midimaker-title">⚡ Black MIDI Maker</div>
+                    <p class="tool-desc">
+                        A raw sequence multiplier and chaos note injection panel. Inject massive exponential cascades, dense funnel stacks, and intense polyphonic glissandos to generate high-density lag-tester track files.
+                    </p>
+                </div>
+                <a href="/blackmidimaker.html" class="btn btn-midimaker">Open Maker</a>
+            </div>
+        </div>
+
+        <!-- Back to Hub Portal -->
+        <a href="/index.html" class="btn btn-back">↩ Back to Portal</a>
+    </div>
+
+    <footer> Powered by HTML5 Canvas & Web Audio | Created by electricMIDI </footer>
+
+</body>
+</html>
