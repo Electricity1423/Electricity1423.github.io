@@ -1,244 +1,1612 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>electricMIDI - Suite Tools Portal</title>
-    <style>
-        /* Cyberpunk Dark Theme Styling */
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            background-color: #0b0c10;
-            color: #c5c6c7;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            overflow-x: hidden;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 900px;
-            width: 100%;
-            text-align: center;
-            background: #1f2833;
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            border: 1px solid #45f3ff;
-        }
-
-        h1 {
-            font-size: 3rem;
-            color: #45f3ff;
-            margin-bottom: 10px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            text-shadow: 0 0 15px rgba(69, 243, 255, 0.4);
-        }
-
-        .subtitle {
-            font-size: 1.2rem;
-            color: #66fcf1;
-            margin-bottom: 35px;
-            font-weight: 300;
-        }
-
-        /* Toolkit Layout Grid */
-        .tools-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 25px;
-            margin-bottom: 20px;
-        }
-
-        @media (min-width: 768px) {
-            .tools-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-            .main-tool {
-                grid-column: span 2;
-            }
-        }
-
-        /* Tool Card Styles */
-        .tool-card {
-            background-color: #0b0c10;
-            border: 2px solid #1f2833;
-            border-radius: 10px;
-            padding: 25px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            align-items: center;
-            transition: transform 0.2s ease, border-color 0.2s ease;
-        }
-
-        .tool-card:hover {
-            transform: translateY(-4px);
-        }
-
-        /* Specific Card Borders */
-        .card-visualizer { border-color: #00ffff; box-shadow: 0 4px 15px rgba(0, 255, 255, 0.1); }
-        .card-esynth { border-color: #0088ff; box-shadow: 0 4px 15px rgba(0, 136, 255, 0.1); }
-        .card-merger { border-color: #ff00ff; box-shadow: 0 4px 15px rgba(255, 0, 255, 0.1); }
-        .card-counter { border-color: #ffaa00; box-shadow: 0 4px 15px rgba(255, 170, 0, 0.1); }
-        .card-maker { border-color: #00ff66; box-shadow: 0 4px 15px rgba(0, 255, 102, 0.1); }
-        .card-online-packs { border-color: #e60067; box-shadow: 0 4px 15px rgba(230, 0, 103, 0.1); }
-        .card-Others { border-color: #9933ff; box-shadow: 0 4px 15px rgba(153, 51, 255, 0.1); }
-
-        .card-visualizer:hover { border-color: #00ffff; box-shadow: 0 6px 25px rgba(0, 255, 255, 0.3); }
-        .card-esynth:hover { border-color: #0088ff; box-shadow: 0 6px 25px rgba(0, 136, 255, 0.3); }
-        .card-merger:hover { border-color: #ff00ff; box-shadow: 0 6px 25px rgba(255, 0, 255, 0.3); }
-        .card-counter:hover { border-color: #ffaa00; box-shadow: 0 6px 25px rgba(255, 170, 0, 0.3); }
-        .card-maker:hover { border-color: #00ff66; box-shadow: 0 6px 25px rgba(0, 255, 102, 0.3); }
-        .card-online-packs:hover { border-color: #e60067; box-shadow: 0 6px 25px rgba(230, 0, 103, 0.3); }
-        .card-Others:hover { border-color: #9933ff; box-shadow: 0 6px 25px rgba(153, 51, 255, 0.3); }
-
-        .tool-title {
-            font-size: 1.4rem;
-            font-weight: bold;
-            margin-bottom: 10px;
-            text-transform: uppercase;
-        }
-        
-        .visualizer-title { color: #00ffff; }
-        .esynth-title { color: #0088ff; }
-        .merger-title { color: #ff00ff; }
-        .counter-title { color: #ffaa00; }
-        .maker-title { color: #00ff66; }
-        .online-packs-title { color: #e60067; }
-        .Others-title { color: #9933ff; }
-
-        .tool-desc {
-            font-size: 0.95rem;
-            line-height: 1.6;
-            color: #a4a7ab;
-            margin-bottom: 20px;
-        }
-
-        /* Universal Action Button configuration */
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            max-width: 280px;
-            padding: 14px 24px;
-            font-size: 1rem;
-            font-weight: bold;
-            text-decoration: none;
-            border-radius: 6px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: all 0.2s ease;
-            color: #0b0c10;
-        }
-
-        .btn-visualizer { background: linear-gradient(135deg, #0055ff, #00ffff); }
-        .btn-esynth { background: linear-gradient(135deg, #00d2ff, #0066ff); color: #fff; }
-        .btn-merger { background: linear-gradient(135deg, #cc00ff, #ff00ff); }
-        .btn-counter { background: linear-gradient(135deg, #ff5500, #ffaa00); }
-        .btn-maker { background: linear-gradient(135deg, #00cc44, #00ff66); }
-        .btn-online-packs { background: linear-gradient(135deg, #ff0055, #e60067); color: #fff; }
-        .btn-Others { background: linear-gradient(135deg, #7700ff, #9933ff); color: #fff; }
-
-        .btn:hover {
-            transform: scale(1.03);
-            filter: brightness(1.1);
-        }
-
-        /* Footer styling */
-        footer {
-            margin-top: 40px;
-            font-size: 0.8rem;
-            color: #4f5d73;
-        }
-    </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>eMIDI Synth</title>
+<style>
+:root{--bg:#0b0d12;--card:#141823;--line:#232a3b;--tx:#e6e9f2;--dim:#8a93aa;--ac:#3ee0ff;--ac2:#8b7bff;--bad:#ff5f6d;--ok:#4ade80}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.45 system-ui,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:1000px;margin:0 auto;padding:18px 14px 60px}
+h1{font-size:22px;margin:0 0 2px;letter-spacing:.3px}
+h1 span{color:var(--ac)}
+.sub{color:var(--dim);margin-bottom:16px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:760px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
+.card h2{margin:0 0 10px;font-size:13px;text-transform:uppercase;letter-spacing:1.2px;color:var(--dim);font-weight:600}
+.full{grid-column:1/-1}
+button,select,input[type=text],input[type=number]{background:#1b2133;color:var(--tx);border:1px solid var(--line);border-radius:8px;padding:7px 12px;font:inherit}
+button{cursor:pointer}
+button:hover{border-color:var(--ac)}
+button.pri{background:linear-gradient(135deg,var(--ac),var(--ac2));color:#06101a;border:0;font-weight:700}
+button.sm{padding:2px 8px;font-size:12px}
+button:disabled{opacity:.45;cursor:default}
+.drop{border:1.5px dashed var(--line);border-radius:10px;padding:14px;text-align:center;color:var(--dim);cursor:pointer;transition:.15s}
+.drop:hover,.drop.over{border-color:var(--ac);color:var(--tx)}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}
+.sf{display:flex;gap:6px;align-items:center;padding:6px 8px;border:1px solid var(--line);border-radius:8px;margin-top:6px;background:#10141e}
+.sf .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sf .st{color:var(--dim);font-size:12px}
+.st.err{color:var(--bad)}.st.ok{color:var(--ok)}
+.set{display:grid;grid-template-columns:150px 1fr 56px;gap:8px;align-items:center;margin:6px 0}
+.set label{color:var(--dim);font-size:13px}
+.set output{text-align:right;font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--ac)}
+canvas{width:100%;height:64px;display:block;border-radius:8px;background:#0e121b}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-top:10px}
+.stat{background:#10141e;border:1px solid var(--line);border-radius:8px;padding:6px 8px}
+.stat b{display:block;font-size:17px;font-variant-numeric:tabular-nums}
+.stat span{color:var(--dim);font-size:11px;text-transform:uppercase;letter-spacing:.8px}
+.bar{height:8px;background:#10141e;border-radius:6px;overflow:hidden;border:1px solid var(--line)}
+.bar>div{height:100%;width:0;background:linear-gradient(90deg,var(--ac),var(--ac2))}
+.info{color:var(--dim);font-size:12.5px;margin-top:6px}
+.tr{display:flex;gap:10px;align-items:center}
+.tr input[type=range]{flex:1}
+.mono{font-variant-numeric:tabular-nums;font-family:ui-monospace,Consolas,monospace}
+.warn{color:#ffb347}
+.lagList{max-height:320px;overflow:auto;margin-top:8px}
+.lagRow{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;padding:6px 8px;border:1px solid var(--line);border-radius:8px;margin-top:5px;background:#10141e}
+.lagRow.off{opacity:.5}
+.lagRow label{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--dim)}
+.lagRow input[type=number]{width:76px;padding:3px 6px}
+.lagRow select{padding:3px 6px;font-size:12px}
+.lagRow .sp{flex:1}
+.lagSep{border-top:1px solid var(--line);margin:16px 0 12px}
+.vidRow{display:flex;gap:10px;align-items:center;padding:5px 8px;border:1px solid var(--line);border-radius:8px;margin-top:4px;background:#10141e;font-size:13px}
+.vidRow .t{flex:1}
+.vidRow .d{color:var(--ac)}
+.vidRow .c{color:var(--dim);font-size:11px}
+.dlbox{margin-top:8px;line-height:2}
+.dlbox input{width:55%;min-width:170px;margin-right:6px;font-size:12px;padding:4px 8px}
+.dlbox button{margin-right:4px}
+a.dl{color:var(--ac)}
+</style>
 </head>
 <body>
+<div class="wrap">
+  <h1>eMIDI <span>Synth</span></h1>
+  <div class="sub">SoundFont (SF2) synthesizer built for black MIDI. Runs in an AudioWorklet with a voice-pooled engine, and can render to WAV faster than real time.</div>
 
-    <div class="container">
-        <h1>electricMIDI</h1>
-        <div class="subtitle">Ultra-Black MIDI Processing & Rendering Ecosystem</div>
-        
-        <div class="tools-grid">
-            <!-- 1. ENGINE VISUALIZER CARD -->
-            <div class="tool-card main-tool card-visualizer">
-                <div>
-                    <div class="tool-title visualizer-title">🎹 electricMIDI Visualizer Engine</div>
-                    <p class="tool-desc">
-                        Our flagship hardware-accelerated rendering layout. Optimized using bare-metal WebGL shaders and sandboxed low-latency Audio Worklet threads to crunch millions of notes at a locked 60 FPS directly on mobile and tablet platforms.
-                    </p>
-                </div>
-                <a href="/crash.html" class="btn btn-visualizer">Launch eMIDI Visualizer</a>
-            </div>
+  <div class="grid">
+    <div class="card">
+      <h2>SoundFonts</h2>
+      <div class="drop" id="sfDrop">Drop .sf2 files here or click to browse<input id="sfFile" type="file" accept=".sf2" multiple hidden></div>
+      <div class="row"><input id="sfUrl" type="text" placeholder="…or load from URL (needs CORS)" style="flex:1;min-width:160px"><button id="sfUrlBtn">Load</button></div>
+      <div id="sfList"></div>
+      <div class="info">Earlier SoundFonts in the list take priority. SF3 (compressed) is not supported.</div>
+    </div>
 
-            <!-- 2. STANDALONE ESYNTH CARD -->
-            <div class="tool-card main-tool card-esynth">
-                <div>
-                    <div class="tool-title esynth-title">🔊 eSynth Standalone Core</div>
-                    <p class="tool-desc">
-                        The raw audio processing powerhouse detached from graphic presentation overhead. Dedicated entirely to lightning-fast SoundFont playback mapping, low-level multi-threading, and spatial reverb acoustics.
-                    </p>
-                </div>
-                <a href="/esynth.html" class="btn btn-esynth">Launch esynth</a>
-            </div>
+    <div class="card">
+      <h2>MIDI file</h2>
+      <div class="drop" id="midDrop">Drop a .mid file here or click to browse<input id="midFile" type="file" accept=".mid,.midi" hidden></div>
+      <div class="info" id="midInfo">No MIDI loaded.</div>
+      <div class="bar" style="margin-top:8px"><div id="midProg"></div></div>
+      <div class="row" style="margin-top:12px">
+        <button id="btnMidiIn">Enable MIDI keyboard input</button>
+        <select id="midiInSel" style="display:none"></select>
+      </div>
+    </div>
 
-            <!-- 3. MIDI FILE MERGER CARD -->
-            <div class="tool-card card-merger">
-                <div>
-                    <div class="tool-title merger-title">🔀 MIDI Merger Pro</div>
-                    <p class="tool-desc">
-                        Combine, pack, and synchronize multi-layered track structures into singular, dense arrangement bundles tailored for extreme black MIDI benchmarks.
-                    </p>
-                </div>
-                <a href="/midi-merger-pro.html" class="btn btn-merger">Open MIDI Merger</a>
-            </div>
+    <div class="card full">
+      <h2>Transport</h2>
+      <div class="tr">
+        <button id="btnPlay" class="pri" style="min-width:84px">Play</button>
+        <button id="btnStop">Stop</button>
+        <button id="btnPanic" title="Silence all notes immediately">Panic</button>
+        <span class="mono" id="tNow">0:00.0</span>
+        <input id="seek" type="range" min="0" max="1000" value="0">
+        <span class="mono" id="tDur">0:00.0</span>
+        <label class="mono" style="color:var(--dim)">Speed <input id="speed" type="number" min="0.1" max="8" step="0.05" value="1" style="width:70px"></label>
+      </div>
+      <canvas id="kb" style="margin-top:12px"></canvas>
+      <div class="info" id="health"></div>
+      <div class="stats">
+        <div class="stat"><span>Active voices</span><b id="sVox">0</b></div>
+        <div class="stat"><span>Peak voices</span><b id="sPeak">0</b></div>
+        <div class="stat"><span>Notes / sec</span><b id="sNps">0</b></div>
+        <div class="stat"><span>Dropped notes</span><b id="sDrop">0</b></div>
+        <div class="stat"><span>Engine load</span><b id="sLoad">0%</b></div>
+      </div>
+    </div>
 
-            <!-- 4. WEB NOTE COUNTER CARD -->
-            <div class="tool-card card-counter">
-                <div>
-                    <div class="tool-title counter-title">📊 Web Note Counter</div>
-                    <p class="tool-desc">
-                        High-throughput telemetry calculator tool. Scans data inputs to parse precise real-time notes-per-second track spikes and structural metadata counts.
-                    </p>
-                </div>
-                <a href="/note-counter.html" class="btn btn-counter">Launch Note Counter</a>
-            </div>
+    <div class="card full" id="lagCard">
+      <h2>Lag mode</h2>
+      <div class="row" style="margin-top:0">
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" id="lagEnable"> Enable lag mode</label>
+        <span class="info" id="lagSummary" style="margin:0"></span>
+      </div>
+      <div class="info">Delays when MIDI events are heard, to imitate a lagging player. Events are never dropped: late events play as soon as the lag ends, in their original order. Works in live playback and in WAV export.</div>
+      <canvas id="lagMap" style="height:34px;margin-top:8px"></canvas>
+      <div id="lagList" class="lagList"></div>
+      <div class="row">
+        <select id="lagType"><option value="stall">Stall &amp; catch up</option><option value="delay">Constant delay</option><option value="ramp">Ramp &amp; recover</option></select>
+        <button id="lagAdd" class="sm">+ Add at playhead</button>
+        <button id="lagGo" class="sm" title="Jump to just before the first lag region">Go to first</button>
+        <button id="lagCopy" class="sm">Copy JSON</button>
+        <button id="lagPaste" class="sm">Paste JSON</button>
+        <button id="lagClear" class="sm">Clear all</button>
+      </div>
+      <div class="info" id="lagHelp"></div>
 
-            <!-- 5. TEXTURE PACK MAKER CARD -->
-            <div class="tool-card card-maker">
-                <div>
-                    <div class="tool-title maker-title">🎨 Texture Pack Maker</div>
-                    <p class="tool-desc">
-                        A dedicated creation workspace utility. Export custom configuration metadata files, bundle active asset states, and compile custom visual sheet archives effortlessly for your eMIDI setup.
-                    </p>
-                </div>
-                <a href="/texture-pack-maker.html" class="btn btn-maker">Open Pack Maker</a>
-            </div>
+      <div class="lagSep"></div>
+      <h2>Scan a video for lag</h2>
+      <div class="drop" id="vidDrop">Drop a screen recording of the lagging playback here, or click to browse<input id="vidFile" type="file" accept="video/*,.mp4,.mov,.m4v,.webm,.mkv" hidden></div>
+      <div class="set"><label>Song starts at (s)</label><input id="vidOff" type="number" min="0" step="0.01" value="0"><span></span></div>
+      <div class="set"><label>Freeze threshold</label><input id="vidThr" type="range" min="0.05" max="3" step="0.05" value="0.6"><output id="vidThrO">0.6</output></div>
+      <div class="set"><label>Min freeze (ms)</label><input id="vidMin" type="number" min="30" max="5000" step="10" value="80"><span></span></div>
+      <div class="set"><label>Scan speed</label><select id="vidRate"><option value="1" selected>1× (most accurate)</option><option value="2">2×</option><option value="4">4× (fast)</option></select><span></span></div>
+      <div class="set"><label>Detect stutter</label><input id="vidStutter" type="checkbox" checked><span></span></div>
+      <div class="set"><label>Ignore empty screens</label><input id="vidEmpty" type="checkbox" checked><span></span></div>
+      <div class="row"><button id="vidCancel" disabled>Cancel scan</button></div>
+      <div class="bar" style="margin-top:8px"><div id="vidProg"></div></div>
+      <div class="info" id="vidInfo">Looks for moments where the picture stops changing (frozen frames) or updates at a lower rate than the rest of the video (stutter). Each one becomes a lag region you can review before adding.</div>
+      <div id="vidList" class="lagList"></div>
+      <div class="row" id="vidActions" style="display:none">
+        <select id="vidAddType"><option value="stall">Add as: Stall &amp; catch up</option><option value="delay">Add as: Constant delay</option><option value="ramp">Add as: Ramp &amp; recover</option></select>
+        <label style="display:flex;align-items:center;gap:4px;color:var(--dim)"><input type="checkbox" id="vidReplace"> Replace existing regions</label>
+        <button id="vidAdd" class="pri">Add checked to lag regions</button>
+      </div>
+      <div class="info">Assumes the song clock keeps running through each freeze (video time minus “Song starts at” = song time). Quiet parts of a song also look frozen, so review the list; “Ignore empty screens” skips frames with no notes on them.</div>
+    </div>
 
-            <!-- 6. ONLINE TEXTURE PACKS REPOSITORY CARD -->
-            <div class="tool-card card-online-packs">
-                <div>
-                    <div class="tool-title online-packs-title">📦 Online Texture Packs</div>
-                    <p class="tool-desc">
-                        Browse, download, and share community-created skins, custom textures, and visual palette arrangements to completely overhaul your eMIDI layout's interface.
-                    </p>
-                </div>
-                <a href="/online-packs.html" class="btn btn-online-packs">Browse Packs</a>
-            </div>
+    <div class="card">
+      <h2>Sound &amp; performance</h2>
+      <div id="settings"></div>
+    </div>
 
-            <!-- 7. MISCELLANEOUS TOOLS CARD -->
-            <div class="tool-card main-tool card-Others">
-                <div>
-                    <div class="tool-title Others-title">📁 Miscellaneous Tools & Projects</div>
-                    <p class="tool-desc">
+    <div class="card">
+      <h2>Engine</h2>
+      <div class="set"><label>Sample rate</label><select id="optSR"><option value="0">Device default</option><option value="44100">44100 Hz</option><option value="48000">48000 Hz</option><option value="96000">96000 Hz</option></select><span></span></div>
+      <div class="set"><label>Latency</label><select id="optLat"><option value="interactive">Low (interactive)</option><option value="balanced">Balanced</option><option value="playback">Safe (playback)</option></select><span></span></div>
+      <div class="row"><button id="btnApply">Apply &amp; restart engine</button></div>
+      <div class="info">Restarting reloads your SoundFonts and MIDI. Black MIDI is CPU-bound: lower <i>Max voices</i> or use Safe latency if you hear crackling. Use WAV export for the cleanest result.</div>
+      <h2 style="margin-top:18px">Render to WAV</h2>
+      <div class="set"><label>Sample rate</label><select id="exSR"><option>44100</option><option selected>48000</option><option>96000</option></select><span></span></div>
+      <div class="set"><label>Format</label><select id="exFmt"><option value="16">16-bit PCM</option><option value="32">32-bit float</option></select><span></span></div>
+      <div class="set"><label>Max voices</label><input id="exVox" type="number" min="64" max="200000" value="20000"><span></span></div>
+      <div class="info">Export always uses cubic interpolation and ignores the realtime voice cap.</div>
+      <div class="row"><button id="btnExport" class="pri">Render WAV</button><button id="btnCancel" disabled>Cancel</button><span id="exInfo" class="info"></span></div>
+      <div class="bar" style="margin-top:8px"><div id="exProg"></div></div>
+      <div id="exLinks"></div>
+      <div class="info">Using an in-app browser (Textastic, etc.)? If the download does not start by itself, use <i>Copy URL</i> or <i>Open</i>, or <i>Share / Save to Files</i> on iOS. The URL is only valid while this page stays open.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================= ENGINE CORE (shared by worklet + workers) ======================= -->
+<script type="text/plain" id="core">
+'use strict';
+/* ---------------- SoundFont 2 parser ---------------- */
+function parseSF2(buf) {
+  const u8 = new Uint8Array(buf), dv = new DataView(buf);
+  const str = function (o, n) { let s = ''; for (let i = 0; i < n; i++) { const c = u8[o + i]; if (!c) break; s += String.fromCharCode(c); } return s; };
+  if (u8.length < 12 || str(0, 4) !== 'RIFF' || str(8, 4) !== 'sfbk') throw new Error('Not a SoundFont 2 file');
+  let smplOff = -1, smplLen = 0, name = '', major = 2;
+  const T = {};
+  const total = Math.min(u8.length, 8 + dv.getUint32(4, true));
+  let p = 12;
+  while (p + 12 <= total) {
+    const id = str(p, 4), size = dv.getUint32(p + 4, true);
+    if (id === 'LIST') {
+      const type = str(p + 8, 4);
+      let q = p + 12; const qe = Math.min(total, p + 8 + size);
+      while (q + 8 <= qe) {
+        const cid = str(q, 4), csz = dv.getUint32(q + 4, true);
+        if (type === 'sdta' && cid === 'smpl') { smplOff = q + 8; smplLen = Math.min(csz, u8.length - (q + 8)); }
+        else if (type === 'pdta') T[cid] = [q + 8, csz];
+        else if (type === 'INFO') { if (cid === 'INAM') name = str(q + 8, csz); else if (cid === 'ifil') major = dv.getUint16(q + 8, true); }
+        q += 8 + csz + (csz & 1);
+      }
+    }
+    p += 8 + size + (size & 1);
+  }
+  if (major >= 3) throw new Error('SF3 (compressed) SoundFonts are not supported - please use an SF2');
+  if (smplOff < 0) throw new Error('SoundFont has no sample data');
+  const cnt = function (k, sz) { if (!T[k]) throw new Error('Corrupt SoundFont (missing ' + k + ')'); return { off: T[k][0], n: Math.floor(T[k][1] / sz) }; };
+  const phdr = cnt('phdr', 38), pbag = cnt('pbag', 4), pgen = cnt('pgen', 4), inst = cnt('inst', 22), ibag = cnt('ibag', 4), igen = cnt('igen', 4), shdr = cnt('shdr', 46);
+  let smpl;
+  if (smplOff & 1) smpl = new Int16Array(buf.slice(smplOff, smplOff + (smplLen & ~1)));
+  else smpl = new Int16Array(buf, smplOff, smplLen >> 1);
+  const nS = smpl.length;
+  const bagIdx = function (c) { const a = new Uint32Array(c.n); for (let i = 0; i < c.n; i++) a[i] = dv.getUint16(c.off + i * 4, true); return a; };
+  const pbagG = bagIdx(pbag), ibagG = bagIdx(ibag);
+  const genRd = function (c) {
+    const r = { n: c.n, op: new Uint16Array(c.n), sv: new Int16Array(c.n), lo: new Uint8Array(c.n), hi: new Uint8Array(c.n) };
+    for (let i = 0; i < c.n; i++) { const o = c.off + i * 4; r.op[i] = dv.getUint16(o, true); r.sv[i] = dv.getInt16(o + 2, true); r.lo[i] = u8[o + 2]; r.hi[i] = u8[o + 3]; }
+    return r;
+  };
+  const pg = genRd(pgen), ig = genRd(igen);
+  const samples = [];
+  for (let i = 0; i < shdr.n - 1; i++) {
+    const o = shdr.off + i * 46;
+    samples.push({ start: dv.getUint32(o + 20, true), end: dv.getUint32(o + 24, true), ls: dv.getUint32(o + 28, true), le: dv.getUint32(o + 32, true), rate: dv.getUint32(o + 36, true), pitch: u8[o + 40], corr: dv.getInt8(o + 41), type: dv.getUint16(o + 44, true) });
+  }
+  function zonesOf(b0, b1, bagG, gen, termOp) {
+    const out = [];
+    for (let b = b0; b < b1 && b + 1 < bagG.length; b++) {
+      const g0 = bagG[b], g1 = Math.min(bagG[b + 1], gen.n);
+      const z = { g: {}, klo: 0, khi: 127, vlo: 0, vhi: 127, hasK: false, hasV: false, term: -1 };
+      for (let i = g0; i < g1; i++) {
+        const op = gen.op[i];
+        if (op === 43) { z.klo = gen.lo[i]; z.khi = gen.hi[i]; z.hasK = true; }
+        else if (op === 44) { z.vlo = gen.lo[i]; z.vhi = gen.hi[i]; z.hasV = true; }
+        else if (op === termOp) { z.term = gen.sv[i] & 0xFFFF; break; }
+        else z.g[op] = gen.sv[i];
+      }
+      out.push(z);
+    }
+    return out;
+  }
+  const DEF = new Array(64).fill(0);
+  DEF[8] = 13500; DEF[33] = DEF[34] = DEF[35] = DEF[36] = DEF[38] = -12000; DEF[56] = 100; DEF[58] = -1;
+  const NOADD = { 0: 1, 1: 1, 2: 1, 3: 1, 4: 1, 12: 1, 45: 1, 50: 1, 46: 1, 47: 1, 54: 1, 57: 1, 58: 1, 53: 1, 41: 1 };
+  const clamp = function (x, a, b) { return x < a ? a : x > b ? b : x; };
+  function mkZone(G, sm, klo, khi, vlo, vhi) {
+    let start = sm.start + G[0] + G[4] * 32768, end = sm.end + G[1] + G[12] * 32768;
+    let ls = sm.ls + G[2] + G[45] * 32768, le = sm.le + G[3] + G[50] * 32768;
+    end = clamp(end, 2, nS); start = clamp(start, 0, end - 2);
+    let mode = G[54] & 3; if (mode === 2) mode = 0;
+    ls = clamp(ls, start, end); le = clamp(le, start, end);
+    if (mode && le - ls < 2) mode = 0;
+    const tcl = function (x) { return clamp(x, -12000, 8000); };
+    return {
+      klo: klo, khi: khi, vlo: vlo, vhi: vhi, start: start, end: end, ls: ls, le: le, mode: mode,
+      rate: sm.rate || 44100, root: G[58] >= 0 ? G[58] : (sm.pitch === 255 ? 60 : sm.pitch),
+      tune: G[51] * 100 + G[52] + sm.corr, scale: G[56], pan: clamp(G[17] / 500, -1, 1),
+      attLin: Math.pow(10, -clamp(G[48], 0, 1440) / 200), fc: clamp(G[8], 1500, 13500),
+      dT: tcl(G[33]), aT: tcl(G[34]), hT: tcl(G[35]), decT: tcl(G[36]), susCb: clamp(G[37], 0, 1440), rT: tcl(G[38]),
+      khT: G[39], kdT: G[40], excl: G[57] & 127
+    };
+  }
+  const presets = [];
+  for (let pi = 0; pi < phdr.n - 1; pi++) {
+    const o = phdr.off + pi * 38;
+    const prog = dv.getUint16(o + 20, true), bank = dv.getUint16(o + 22, true);
+    const b0 = dv.getUint16(o + 24, true), b1 = dv.getUint16(o + 38 + 24, true);
+    const pz = zonesOf(b0, b1, pbagG, pg, 41);
+    let pglob = null;
+    if (pz.length && pz[0].term < 0) pglob = pz.shift();
+    const zones = [];
+    for (const z of pz) {
+      if (z.term < 0 || z.term >= inst.n - 1) continue;
+      const io = inst.off + z.term * 22;
+      const ib0 = dv.getUint16(io + 20, true), ib1 = dv.getUint16(io + 22 + 20, true);
+      const iz = zonesOf(ib0, ib1, ibagG, ig, 53);
+      let iglob = null;
+      if (iz.length && iz[0].term < 0) iglob = iz.shift();
+      for (const s of iz) {
+        if (s.term < 0 || s.term >= samples.length) continue;
+        const sm = samples[s.term];
+        if (sm.type & 0x8000) continue;
+        const G = DEF.slice();
+        const set = function (g) { for (const k in g) G[k] = g[k]; };
+        const add = function (g) { for (const k in g) if (!NOADD[k]) G[k] += g[k]; };
+        if (iglob) set(iglob.g);
+        set(s.g);
+        if (pglob) add(pglob.g);
+        add(z.g);
+        let klo = s.hasK ? s.klo : (iglob && iglob.hasK ? iglob.klo : 0), khi = s.hasK ? s.khi : (iglob && iglob.hasK ? iglob.khi : 127);
+        let vlo = s.hasV ? s.vlo : (iglob && iglob.hasV ? iglob.vlo : 0), vhi = s.hasV ? s.vhi : (iglob && iglob.hasV ? iglob.vhi : 127);
+        const pk = z.hasK ? z : (pglob && pglob.hasK ? pglob : null), pv = z.hasV ? z : (pglob && pglob.hasV ? pglob : null);
+        if (pk) { klo = Math.max(klo, pk.klo); khi = Math.min(khi, pk.khi); }
+        if (pv) { vlo = Math.max(vlo, pv.vlo); vhi = Math.min(vhi, pv.vhi); }
+        if (klo > khi || vlo > vhi) continue;
+        zones.push(mkZone(G, sm, klo, khi, vlo, vhi));
+      }
+    }
+    if (zones.length) presets.push({ bank: bank, prog: prog, name: str(o, 20), zones: zones });
+  }
+  return { name: name, smpl: smpl, presets: presets };
+}
+
+/* ---------------- Standard MIDI file parser ---------------- */
+function parseMIDI(buf, onProg) {
+  const u8 = new Uint8Array(buf), dv = new DataView(buf), len = u8.length;
+  const tag = function (o) { return String.fromCharCode(u8[o], u8[o + 1], u8[o + 2], u8[o + 3]); };
+  if (len < 14 || tag(0) !== 'MThd') throw new Error('Not a MIDI file');
+  const hl = dv.getUint32(4), div = dv.getUint16(12);
+  let spt0 = 0;
+  if (div & 0x8000) { const fps = 256 - (div >> 8), tpf = div & 255; spt0 = 1 / (fps * tpf); }
+  const tracks = [], tT = [], tU = [];
+  let p = 8 + hl, notes = 0;
+  const trk = function () { return { ticks: new Uint32Array(1024), msgs: new Uint32Array(1024), n: 0, p: 0 }; };
+  const push = function (tr, tick, msg) {
+    if (tr.n === tr.ticks.length) {
+      const a = new Uint32Array(tr.n * 2); a.set(tr.ticks); tr.ticks = a;
+      const b = new Uint32Array(tr.n * 2); b.set(tr.msgs); tr.msgs = b;
+    }
+    tr.ticks[tr.n] = tick; tr.msgs[tr.n++] = msg;
+  };
+  let tn = 0;
+  while (p + 8 <= len) {
+    const id = tag(p); let sz = dv.getUint32(p + 4); const s0 = p + 8;
+    if (s0 + sz > len) sz = len - s0;
+    if (id === 'MTrk') {
+      const tr = trk(), e = s0 + sz;
+      let q = s0, tick = 0, run = 0;
+      while (q < e) {
+        let d = 0, b;
+        do { b = u8[q++]; d = d * 128 + (b & 127); } while ((b & 128) && q < e);
+        tick += d;
+        let st = u8[q];
+        if (st < 0x80) { st = run; if (!st) { q++; continue; } } else { q++; if (st < 0xF0) run = st; }
+        if (st === 0xFF) {
+          const type = u8[q++]; let l = 0, c;
+          do { c = u8[q++]; l = l * 128 + (c & 127); } while ((c & 128) && q < e);
+          if (type === 0x51 && l === 3) { tT.push(tick); tU.push((u8[q] << 16) | (u8[q + 1] << 8) | u8[q + 2]); }
+          q += l; if (type === 0x2F) break;
+        } else if (st === 0xF0 || st === 0xF7) {
+          let l = 0, c;
+          do { c = u8[q++]; l = l * 128 + (c & 127); } while ((c & 128) && q < e);
+          if (st === 0xF0 && l >= 4) {
+            const a = u8[q], b2 = u8[q + 1];
+            let reset = (a === 0x7E && u8[q + 3] === 0x09 && (u8[q + 4] === 1 || u8[q + 4] === 2 || u8[q + 4] === 3));
+            if (!reset && a === 0x41 && l >= 9) { for (let k = 0; k < l - 4; k++) if (u8[q + k] === 0x40 && u8[q + k + 1] === 0x00 && u8[q + k + 2] === 0x7F && u8[q + k + 3] === 0x00) { reset = true; break; } }
+            if (!reset && a === 0x43 && l >= 6) { for (let k = 0; k < l - 3; k++) if (u8[q + k] === 0x00 && u8[q + k + 1] === 0x00 && u8[q + k + 2] === 0x7E && u8[q + k + 3] === 0x00) { reset = true; break; } }
+            if (reset) push(tr, tick, 0xFF);
+          }
+          q += l;
+        } else {
+          const hi = st & 0xF0;
+          if (hi === 0xC0 || hi === 0xD0) { const d1 = u8[q++] & 127; if (hi === 0xC0) push(tr, tick, st | (d1 << 8)); }
+          else {
+            const d1 = u8[q++] & 127; let d2 = u8[q++] & 127, s2 = st;
+            if (hi === 0x90) { if (d2 === 0) { s2 = 0x80 | (st & 15); d2 = 64; } else notes++; push(tr, tick, s2 | (d1 << 8) | (d2 << 16)); }
+            else if (hi === 0x80 || hi === 0xB0 || hi === 0xE0) push(tr, tick, st | (d1 << 8) | (d2 << 16));
+          }
+        }
+      }
+      tracks.push(tr); tn++;
+      if (onProg) onProg(0.5 * (p / len));
+    }
+    p = s0 + sz;
+  }
+  /* tempo map */
+  const ord = []; for (let i = 0; i < tT.length; i++) ord.push(i);
+  ord.sort(function (a, b) { return tT[a] - tT[b] || a - b; });
+  const segTick = [0], segTime = [0], segSpt = [spt0 || (500000 / 1e6 / div)];
+  if (!spt0) {
+    for (const i of ord) {
+      const tick = tT[i], spt = tU[i] / 1e6 / div, k = segTick.length - 1;
+      if (tick === segTick[k]) segSpt[k] = spt;
+      else { segTime.push(segTime[k] + (tick - segTick[k]) * segSpt[k]); segTick.push(tick); segSpt.push(spt); }
+    }
+  }
+  let total = 0; for (const t of tracks) total += t.n;
+  if (total > 150e6) throw new Error('MIDI too large (' + Math.round(total / 1e6) + 'M events) for browser memory');
+  const times = new Float64Array(total), msgs = new Uint32Array(total);
+  const K = tracks.length, heap = new Int32Array(K); let hn = 0;
+  const less = function (a, b) { const ta = tracks[a].ticks[tracks[a].p], tb = tracks[b].ticks[tracks[b].p]; return ta < tb || (ta === tb && a < b); };
+  const down = function (i) {
+    for (;;) {
+      const l = 2 * i + 1, r = l + 1; let m = i;
+      if (l < hn && less(heap[l], heap[m])) m = l;
+      if (r < hn && less(heap[r], heap[m])) m = r;
+      if (m === i) break;
+      const t = heap[i]; heap[i] = heap[m]; heap[m] = t; i = m;
+    }
+  };
+  for (let t = 0; t < K; t++) if (tracks[t].n > 0) heap[hn++] = t;
+  for (let i = (hn >> 1) - 1; i >= 0; i--) down(i);
+  let si = 0, o = 0;
+  const segN = segTick.length;
+  while (hn > 0) {
+    const t = heap[0], tr = tracks[t], tick = tr.ticks[tr.p], msg = tr.msgs[tr.p++];
+    while (si + 1 < segN && segTick[si + 1] <= tick) si++;
+    times[o] = segTime[si] + (tick - segTick[si]) * segSpt[si]; msgs[o++] = msg;
+    if (tr.p >= tr.n) heap[0] = heap[--hn];
+    if (hn > 0) down(0);
+    if (onProg && (o & 0xFFFFF) === 0) onProg(0.5 + 0.5 * (o / total));
+  }
+  let nc = 0;
+  for (let i = 0; i < total; i++) { const h = msgs[i] & 0xF0; if (h !== 0x80 && h !== 0x90) nc++; }
+  const ctl = new Uint32Array(nc); nc = 0;
+  for (let i = 0; i < total; i++) { const h = msgs[i] & 0xF0; if (h !== 0x80 && h !== 0x90) ctl[nc++] = i; }
+  return { times: times, msgs: msgs, ctl: ctl, dur: total ? times[total - 1] : 0, tracks: tn, notes: notes, events: total, division: div };
+}
+
+/* ---------------- Synth engine ---------------- */
+function safeInc(x) { return x > 0 ? (x < 512 ? x : 512) : 1; }
+const PAN_L = new Float32Array(1024), PAN_R = new Float32Array(1024), VEL = new Float32Array(128);
+for (let i = 0; i < 1024; i++) { const a = (i / 1023 * 2) * Math.PI / 4; PAN_L[i] = Math.cos(a); PAN_R[i] = Math.sin(a); }
+for (let i = 0; i < 128; i++) VEL[i] = (i / 127) * (i / 127);
+
+class Voice {
+  constructor() {
+    this.kc = null; this.data = null; this.pos = 0; this.baseInc = 0; this.incNow = 0; this.ch = 0; this.key = 0; this.velG = 0;
+    this.st = 7; this.e = 0; this.cnt = 0; this.gl = 0; this.gr = 0; this.z = 0; this.age = 0; this.startAt = 0; this.fresh = true;
+    this.sust = false; this.relPend = false; this.looping = false; this.noteId = 0; this.kPrev = null; this.kNext = null;
+    this.inKey = false; this.kIdx = 0; this.gen = 0; this.done = false; this.keyOff = false; this.lb = 0;
+  }
+}
+
+function mixNoLoop(v, L, R, n, s, gl, gr, dgl, dgr, cubic) {
+  const data = v.data, kc = v.kc, end = kc.end, st0 = kc.start, inc = v.incNow, fa = kc.fa;
+  let pos = v.pos, z = v.z;
+  gl += dgl * s; gr += dgr * s;
+  for (let i = s; i < n; i++) {
+    const ip = pos | 0;
+    if (ip + 1 >= end) { v.done = true; break; }
+    const fr = pos - ip, y1 = data[ip];
+    let x;
+    if (cubic) {
+      const y0 = ip > st0 ? data[ip - 1] : y1, y2 = data[ip + 1], y3 = ip + 2 < end ? data[ip + 2] : y2;
+      x = ((((0.5 * (y3 - y0) + 1.5 * (y1 - y2)) * fr) + (y0 - 2.5 * y1 + 2 * y2 - 0.5 * y3)) * fr + 0.5 * (y2 - y0)) * fr + y1;
+    } else x = y1 + (data[ip + 1] - y1) * fr;
+    if (fa < 1) { z += fa * (x - z); x = z; }
+    L[i] += x * gl; R[i] += x * gr;
+    gl += dgl; gr += dgr; pos += inc;
+  }
+  v.pos = pos; v.z = z;
+}
+
+function mixLoop(v, L, R, n, s, gl, gr, dgl, dgr, cubic) {
+  const data = v.data, kc = v.kc, ls = kc.ls, le = kc.le, ll = le - ls, st0 = kc.start, inc = v.incNow, fa = kc.fa;
+  let pos = v.pos, z = v.z;
+  gl += dgl * s; gr += dgr * s;
+  for (let i = s; i < n; i++) {
+    const ip = pos | 0, fr = pos - ip;
+    let i1 = ip + 1; if (i1 >= le) i1 -= ll;
+    const y1 = data[ip];
+    let x;
+    if (cubic) {
+      let i0 = ip - 1; if (i0 < ls) i0 = (ip >= ls) ? i0 + ll : (i0 >= st0 ? i0 : ip);
+      let i3 = ip + 2; if (i3 >= le) i3 -= ll;
+      const y0 = data[i0], y2 = data[i1], y3 = data[i3];
+      x = ((((0.5 * (y3 - y0) + 1.5 * (y1 - y2)) * fr) + (y0 - 2.5 * y1 + 2 * y2 - 0.5 * y3)) * fr + 0.5 * (y2 - y0)) * fr + y1;
+    } else x = y1 + (data[i1] - y1) * fr;
+    if (fa < 1) { z += fa * (x - z); x = z; }
+    L[i] += x * gl; R[i] += x * gr;
+    gl += dgl; gr += dgr; pos += inc;
+    while (pos >= le) pos -= ll;
+  }
+  v.pos = pos; v.z = z;
+}
+
+class Reverb {
+  constructor(sr) {
+    const sc = sr / 44100, ct = [1116, 1188, 1277, 1356, 1422, 1491, 1557, 1617], at = [556, 441, 341, 225], sp = 23;
+    const mk = function (t) { return new Float32Array(Math.max(8, Math.round(t * sc))); };
+    this.cl = ct.map(mk); this.cr = ct.map(function (t) { return mk(t + sp); });
+    this.al = at.map(mk); this.ar = at.map(function (t) { return mk(t + sp); });
+    this.ci = new Int32Array(16); this.cs = new Float32Array(16); this.ai = new Int32Array(8);
+    this.fb = 0.84; this.damp = 0.2;
+  }
+  process(L, R, n, wet) {
+    const fb = this.fb, d1 = this.damp, d2 = 1 - d1, cs = this.cs, ci = this.ci, ai = this.ai;
+    for (let i = 0; i < n; i++) {
+      const inp = (L[i] + R[i]) * 0.015;
+      let oL = 0, oR = 0;
+      for (let c = 0; c < 8; c++) {
+        let b = this.cl[c], k = ci[c], y = b[k];
+        cs[c] = y * d2 + cs[c] * d1; b[k] = inp + cs[c] * fb; if (++k >= b.length) k = 0; ci[c] = k; oL += y;
+        b = this.cr[c]; k = ci[8 + c]; y = b[k];
+        cs[8 + c] = y * d2 + cs[8 + c] * d1; b[k] = inp + cs[8 + c] * fb; if (++k >= b.length) k = 0; ci[8 + c] = k; oR += y;
+      }
+      for (let a = 0; a < 4; a++) {
+        let b = this.al[a], k = ai[a]; const bo = b[k];
+        b[k] = oL + bo * 0.5; if (++k >= b.length) k = 0; ai[a] = k; oL = bo - oL;
+        b = this.ar[a]; k = ai[4 + a]; const bo2 = b[k];
+        b[k] = oR + bo2 * 0.5; if (++k >= b.length) k = 0; ai[4 + a] = k; oR = bo2 - oR;
+      }
+      L[i] += oL * wet; R[i] += oR * wet;
+    }
+  }
+}
+
+class Synth {
+  constructor(sr) {
+    this.sr = sr;
+    this.cfg = { maxVoices: 2000, master: 0.6, reverb: 0.12, filter: true, interp: 0, minNoteMs: 10, maxRel: 2, keyLimit: 0, velMin: 0, autoLoad: true };
+    this.cfgGen = 1; this.sfs = [];
+    this.voices = []; this.pool = []; this.nKill = 0; this.stealPtr = 0; this.nid = 0;
+    this.keyOld = new Array(2048).fill(null); this.keyNew = new Array(2048).fill(null); this.keyCnt = new Int32Array(2048);
+    this.exclV = new Array(2048).fill(null); this.exclG = new Int32Array(2048);
+    this.chProg = new Int32Array(16); this.chBank = new Int32Array(16); this.chVol = new Int32Array(16); this.chExp = new Int32Array(16);
+    this.chPanV = new Float64Array(16); this.chSust = new Int32Array(16); this.chBend = new Int32Array(16); this.chRange = new Float64Array(16);
+    this.chBendMul = new Float64Array(16); this.chGain = new Float64Array(16); this.rpn = new Int32Array(32);
+    this.chPr = new Array(16).fill(undefined);
+    this.times = null; this.msgs = null; this.ctl = null; this.dur = 0; this.pi = 0; this.t = 0; this.playing = false; this.speed = 1; this.songDone = false; this.endedFlag = false;
+    this.live = []; this.noteCount = 0; this.dropped = 0; this.peak = 0; this.limG = 1; this.scale = 1; this.errCount = 0;
+    this.hist = new Int32Array(256); this.f32 = new Float32Array(1); this.u32 = new Uint32Array(this.f32.buffer);
+    this.rv = new Reverb(sr);
+    this.lagEnabled = false; this.lagRegions = []; this.lagNext = 0; this.lagActive = []; this.lastFire = 0;
+    this.resetAll(); this.applyCfg();
+  }
+  static makeSF(m) {
+    const map = new Map(); let first = null;
+    const sf = { smpl: m.smpl, presets: map, first: null };
+    for (const p of m.presets) {
+      for (const z of p.zones) { z.sf = sf; z.kc = new Array(128); }
+      p.byKey = new Array(128); map.set((p.bank << 8) | p.prog, p);
+      if (!first || (p.bank === 0 && p.prog === 0)) first = p;
+    }
+    sf.first = first; return sf;
+  }
+  setSFs(list) { this.sfs = list; this.chPr.fill(undefined); this.cfgGen++; }
+  setCfg(c) {
+    const cf = this.cfg, lim = { maxVoices: [16, 300000], master: [0, 3], reverb: [0, 1], minNoteMs: [0, 500], maxRel: [0.01, 30], keyLimit: [0, 1000], velMin: [0, 127], interp: [0, 1] };
+    for (const k in c) {
+      if (!(k in cf)) continue;
+      if (k === 'filter' || k === 'autoLoad') { cf[k] = !!c[k]; continue; }
+      let v = +c[k]; if (v !== v) continue;
+      const l = lim[k]; if (l) v = Math.min(l[1], Math.max(l[0], v));
+      cf[k] = v;
+    }
+    this.applyCfg();
+  }
+  effMax() { const c = this.cfg; return c.autoLoad ? Math.max(16, Math.floor(c.maxVoices * this.scale)) : c.maxVoices; }
+  applyCfg() {
+    const c = this.cfg, sr = this.sr;
+    this.minFrames = Math.round(c.minNoteMs / 1000 * sr);
+    this.hardMax = Math.floor(c.maxVoices * 1.4) + 32;
+    this.killB = Math.pow(Math.pow(10, -4 / (0.005 * sr)), 128);
+    this.cfgGen++;
+  }
+  resetAll() {
+    for (let c = 0; c < 16; c++) {
+      this.chProg[c] = 0; this.chBank[c] = 0; this.chVol[c] = 100; this.chExp[c] = 127; this.chPanV[c] = 0; this.chSust[c] = 0;
+      this.chBend[c] = 8192; this.chRange[c] = 2; this.chBendMul[c] = 1; this.updGain(c); this.chPr[c] = undefined;
+    }
+    this.rpn.fill(127);
+  }
+  updGain(c) { const a = this.chVol[c] / 127, b = this.chExp[c] / 127; this.chGain[c] = a * a * b * b; }
+  /* --- song / sequencer --- */
+  setSong(times, msgs, ctl, dur) { this.times = times; this.msgs = msgs; this.ctl = ctl; this.dur = dur; this.playing = false; this.seek(0); }
+  setLag(enabled, regions) {
+    this.lagEnabled = !!enabled;
+    const out = [], num = function (v) { v = +v; return v === v && v >= 0 && v < 1e7 ? v : 0; };
+    if (Array.isArray(regions)) {
+      for (let i = 0; i < regions.length && out.length < 200000; i++) {
+        const r = regions[i]; if (!r || r.on === false) continue;
+        const type = (r.type === 'stall' || r.type === 'ramp') ? r.type : 'delay';
+        const start = num(r.start), end = Math.max(start, num(r.end)), amount = Math.min(600, num(r.amount));
+        const lagEnd = Math.max(end + 0.001, num(r.lagEnd));
+        if (type === 'stall' ? end <= start : amount <= 0) continue;
+        out.push({ type: type, start: start, end: end, amount: amount, lagEnd: lagEnd, ext: type === 'ramp' ? lagEnd : end });
+      }
+      out.sort(function (a, b) { return a.start - b.start; });
+    }
+    this.lagRegions = out; this.lagReset();
+  }
+  lagReset() { this.lagNext = 0; this.lagActive = []; this.lastFire = 0; }
+  /* How many seconds the event at song time et is delayed. Must be called with non-decreasing et (between resets). */
+  lagAt(et) {
+    const rs = this.lagRegions, act = this.lagActive;
+    while (this.lagNext < rs.length && rs[this.lagNext].start <= et) act.push(rs[this.lagNext++]);
+    let best = 0;
+    for (let i = act.length - 1; i >= 0; i--) {
+      const r = act[i];
+      if (et >= r.ext) { act[i] = act[act.length - 1]; act.pop(); continue; }
+      let l;
+      if (r.type === 'stall') l = r.end - et;
+      else if (r.type === 'delay') l = r.amount;
+      else if (et <= r.end) l = r.amount * (et - r.start) / Math.max(0.001, r.end - r.start);
+      else l = r.amount * (1 - (et - r.end) / (r.lagEnd - r.end));
+      if (l > best) best = l;
+    }
+    return best;
+  }
+  maxLagEnd() {
+    let m = this.dur;
+    if (this.lagEnabled) for (let i = 0; i < this.lagRegions.length; i++) { const r = this.lagRegions[i], e = r.ext + (r.type === 'stall' ? 0 : r.amount); if (e > m) m = e; }
+    return m;
+  }
+  play() { if (this.times) { this.playing = true; this.endedFlag = false; } }
+  pause() { this.playing = false; this.releaseAll(); }
+  seek(t) {
+    this.lagReset();
+    this.allOff(); this.resetAll(); this.songDone = false; this.endedFlag = false;
+    if (!this.times) { this.t = 0; this.pi = 0; return; }
+    const tm = this.times; let lo = 0, hi = tm.length;
+    while (lo < hi) { const m = (lo + hi) >> 1; if (tm[m] < t) lo = m + 1; else hi = m; }
+    const ctl = this.ctl, msgs = this.msgs;
+    for (let k = 0; k < ctl.length; k++) { const ci = ctl[k]; if (ci >= lo) break; this.dispatch(msgs[ci], 0); }
+    this.pi = lo; this.t = t;
+  }
+  /* --- events --- */
+  dispatch(m, off) {
+    const st = m & 255, ch = st & 15, d1 = (m >> 8) & 127, d2 = (m >> 16) & 127;
+    switch (st & 0xF0) {
+      case 0x90: if (d2 === 0) this.noteOff(ch, d1); else this.noteOn(ch, d1, d2, off); break;
+      case 0x80: this.noteOff(ch, d1); break;
+      case 0xB0: this.cc(ch, d1, d2); break;
+      case 0xC0: this.chProg[ch] = d1; this.chPr[ch] = undefined; break;
+      case 0xE0: this.chBend[ch] = d1 | (d2 << 7); this.chBendMul[ch] = Math.pow(2, ((this.chBend[ch] - 8192) / 8192) * this.chRange[ch] / 12); break;
+      case 0xF0: if (st === 0xFF) this.resetAll(); break;
+    }
+  }
+  cc(ch, n, v) {
+    switch (n) {
+      case 0: this.chBank[ch] = v; this.chPr[ch] = undefined; break;
+      case 7: this.chVol[ch] = v; this.updGain(ch); break;
+      case 11: this.chExp[ch] = v; this.updGain(ch); break;
+      case 10: this.chPanV[ch] = Math.max(-1, (v - 64) / 63); break;
+      case 64: {
+        const was = this.chSust[ch]; this.chSust[ch] = v;
+        if (was >= 64 && v < 64) {
+          const vs = this.voices;
+          for (let i = 0; i < vs.length; i++) { const x = vs[i]; if (x.ch === ch && x.sust) { x.sust = false; this.reqRelease(x); } }
+        }
+        break;
+      }
+      case 101: this.rpn[ch * 2] = v; break;
+      case 100: this.rpn[ch * 2 + 1] = v; break;
+      case 99: case 98: this.rpn[ch * 2] = 127; this.rpn[ch * 2 + 1] = 127; break;
+      case 6: if (this.rpn[ch * 2] === 0 && this.rpn[ch * 2 + 1] === 0) { const rg = v > 48 ? 48 : v; this.chRange[ch] = rg; this.chBendMul[ch] = Math.pow(2, ((this.chBend[ch] - 8192) / 8192) * rg / 12); } break;
+      case 120: { const vs = this.voices; for (let i = 0; i < vs.length; i++) if (vs[i].ch === ch) this.fastKill(vs[i]); break; }
+      case 123: { const vs = this.voices; for (let i = 0; i < vs.length; i++) { const x = vs[i]; if (x.ch === ch && !x.keyOff) { x.keyOff = true; this.doRelease(x); } } break; }
+      case 121: this.chExp[ch] = 127; this.updGain(ch); this.chBend[ch] = 8192; this.chBendMul[ch] = 1; this.cc(ch, 64, 0); break;
+    }
+  }
+  findPreset(ch) {
+    let bank = ch === 9 ? 128 : this.chBank[ch]; if (bank === 120 || bank === 127) bank = 128;
+    const prog = this.chProg[ch], sfs = this.sfs;
+    const find = function (b, p) { for (let i = 0; i < sfs.length; i++) { const r = sfs[i].presets.get((b << 8) | p); if (r) return r; } return null; };
+    let pr = find(bank, prog) || (bank === 128 ? find(128, 0) : find(0, prog));
+    if (!pr && bank !== 128) pr = find(0, 0);
+    if (!pr && sfs.length) pr = sfs[0].first;
+    return pr;
+  }
+  noteOn(ch, key, vel, off) {
+    this.noteCount++;
+    if (vel < this.cfg.velMin) { this.dropped++; return; }
+    let pr = this.chPr[ch];
+    if (pr === undefined) pr = this.chPr[ch] = this.findPreset(ch);
+    if (!pr) return;
+    let zs = pr.byKey[key];
+    if (zs === undefined) zs = pr.byKey[key] = pr.zones.filter(function (z) { return key >= z.klo && key <= z.khi; });
+    const nid = ++this.nid;
+    for (let i = 0; i < zs.length; i++) { const z = zs[i]; if (vel >= z.vlo && vel <= z.vhi) this.startVoice(ch, key, vel, z, off, nid); }
+  }
+  getKC(z, key) {
+    let kc = z.kc[key];
+    if (kc === undefined || kc.gen !== this.cfgGen) kc = z.kc[key] = this.buildKC(z, key);
+    return kc;
+  }
+  buildKC(z, key) {
+    const sr = this.sr, cfg = this.cfg;
+    const t2s = function (tc) { return tc <= -11500 ? 0 : Math.pow(2, tc / 1200); };
+    const cents = (key - z.root) * z.scale + z.tune, kd = 60 - key;
+    const decS = t2s(z.decT + z.kdT * kd);
+    const dm = decS > 0 ? Math.pow(10, -5 / (decS * sr)) : 0;
+    const relS = Math.min(t2s(z.rT), cfg.maxRel);
+    const rm = Math.pow(10, -5 / (Math.max(relS, 0.0005) * sr));
+    let fa = 1;
+    if (cfg.filter && z.fc < 13300) { const hz = Math.max(20, 8.176 * Math.pow(2, z.fc / 1200)); if (hz < sr * 0.45) fa = 1 - Math.exp(-2 * Math.PI * hz / sr); }
+    const sus = z.susCb <= 0 ? 1 : (z.susCb >= 1000 ? 0 : Math.pow(10, -z.susCb / 200));
+    return {
+      gen: this.cfgGen, inc: safeInc(z.rate / sr * Math.pow(2, cents / 1200)), gainBase: z.attLin / 32768, pan: z.pan,
+      delayN: t2s(z.dT) * sr, attackN: t2s(z.aT) * sr, holdN: t2s(z.hT + z.khT * kd) * sr,
+      decB: Math.pow(dm, 128), sus: sus, relB: Math.pow(rm, 128), fa: fa,
+      start: z.start, end: z.end, ls: z.ls, le: z.le, loop: z.mode, excl: z.excl
+    };
+  }
+  linkKey(v) {
+    const idx = v.kIdx; v.kPrev = this.keyNew[idx]; v.kNext = null;
+    if (v.kPrev) v.kPrev.kNext = v; else this.keyOld[idx] = v;
+    this.keyNew[idx] = v; this.keyCnt[idx]++; v.inKey = true;
+  }
+  unlinkKey(v) {
+    if (!v.inKey) return;
+    const p = v.kPrev, n = v.kNext, idx = v.kIdx;
+    if (p) p.kNext = n; else this.keyOld[idx] = n;
+    if (n) n.kPrev = p; else this.keyNew[idx] = p;
+    this.keyCnt[idx]--; v.inKey = false; v.kPrev = null; v.kNext = null;
+  }
+  fastKill(v) { if (v.st < 6) { v.st = 6; this.nKill++; this.unlinkKey(v); } }
+  startVoice(ch, key, vel, z, off, nid) {
+    const vs = this.voices;
+    if (vs.length >= this.hardMax * 3) { this.dropped++; return; }
+    if (vs.length - this.nKill >= this.hardMax) {
+      let ok = false;
+      for (let t = 0; t < 8; t++) { const c = vs[(this.stealPtr++) % vs.length]; if (c.st < 6) { this.fastKill(c); ok = true; break; } }
+      if (!ok) { this.dropped++; return; }
+    }
+    const kc = this.getKC(z, key);
+    if (kc.excl) {
+      const ei = ch * 128 + kc.excl, pv = this.exclV[ei];
+      if (pv && pv.gen === this.exclG[ei] && pv.st < 6) this.fastKill(pv);
+    }
+    const idx = ch * 128 + key, lim = this.cfg.keyLimit;
+    if (lim > 0) { while (this.keyCnt[idx] >= lim) { const o = this.keyOld[idx]; if (!o) break; this.fastKill(o); } }
+    let v = this.pool.pop(); if (!v) v = new Voice();
+    v.gen++; v.kc = kc; v.data = z.sf.smpl; v.pos = kc.start; v.baseInc = kc.inc; v.ch = ch; v.key = key; v.velG = VEL[vel];
+    if (kc.delayN > 0) { v.st = 0; v.cnt = kc.delayN; v.e = 0; }
+    else if (kc.attackN > 0) { v.st = 1; v.e = 0; }
+    else { v.st = 2; v.e = 1; v.cnt = kc.holdN; }
+    v.age = -off; v.startAt = off; v.fresh = true; v.sust = false; v.relPend = false; v.keyOff = false; v.done = false;
+    v.looping = kc.loop !== 0; v.noteId = nid; v.z = 0; v.gl = 0; v.gr = 0; v.kIdx = idx; v.inKey = false;
+    this.linkKey(v);
+    if (kc.excl) { const ei = ch * 128 + kc.excl; this.exclV[ei] = v; this.exclG[ei] = v.gen; }
+    vs.push(v);
+  }
+  noteOff(ch, key) {
+    const idx = ch * 128 + key; let nid = -1;
+    for (let v = this.keyOld[idx]; v; v = v.kNext) {
+      if (v.keyOff) continue;
+      if (nid < 0) nid = v.noteId; else if (v.noteId !== nid) break;
+      v.keyOff = true; this.doRelease(v);
+    }
+  }
+  doRelease(v) { if (this.chSust[v.ch] >= 64) v.sust = true; else this.reqRelease(v); }
+  reqRelease(v) { if (v.age < this.minFrames) v.relPend = true; else this.release(v); }
+  release(v) { if (v.st < 5) { v.st = 5; if (v.kc.loop === 2) v.looping = false; } }
+  releaseAll() { const vs = this.voices; for (let i = 0; i < vs.length; i++) { const v = vs[i]; if (!v.keyOff) { v.keyOff = true; v.sust = false; this.release(v); } } }
+  allOff() { const vs = this.voices; for (let i = 0; i < vs.length; i++) this.fastKill(vs[i]); }
+  hardReset() {
+    this.voices = []; this.pool = []; this.nKill = 0; this.keyOld.fill(null); this.keyNew.fill(null); this.keyCnt.fill(0);
+    this.exclV.fill(null); this.limG = 1; this.live = []; this.stealPtr = 0;
+  }
+  /* --- rendering --- */
+  cull() {
+    const vs = this.voices, max = this.effMax(), live = vs.length - this.nKill;
+    if (live <= max) return;
+    const excess = live - max, hist = this.hist, f32 = this.f32, u32 = this.u32;
+    hist.fill(0);
+    for (let i = 0; i < vs.length; i++) {
+      const v = vs[i]; if (v.st >= 6) continue;
+      const peak = v.kc.gainBase * v.velG;
+      let l = v.st <= 2 ? peak : v.e * peak; if (v.st === 5) l *= 0.2;
+      f32[0] = l; const b = u32[0] >>> 23; v.lb = b; hist[b]++;
+    }
+    let acc = 0, tb = 0;
+    for (let b = 0; b < 256; b++) { if (acc + hist[b] >= excess) { tb = b; break; } acc += hist[b]; }
+    let remain = excess - acc;
+    for (let i = 0; i < vs.length; i++) {
+      const v = vs[i]; if (v.st >= 6) continue;
+      if (v.lb < tb) this.fastKill(v); else if (v.lb === tb && remain > 0) { this.fastKill(v); remain--; }
+    }
+  }
+  renderVoices(L, R, n) {
+    const vs = this.voices, minF = this.minFrames, cubic = this.cfg.interp === 1;
+    for (let vi = vs.length - 1; vi >= 0; vi--) {
+      const v = vs[vi], kc = v.kc;
+      if (v.relPend && v.age >= minF) { v.relPend = false; this.release(v); }
+      const e0 = v.e; let e1 = e0, dead = false;
+      switch (v.st) {
+        case 0: v.cnt -= n; e1 = 0; if (v.cnt <= 0) { if (kc.attackN > 0) v.st = 1; else { v.st = 2; v.e = 1; v.cnt = kc.holdN; } } break;
+        case 1: e1 = e0 + n / kc.attackN; if (e1 >= 1) { e1 = 1; v.st = 2; v.cnt = kc.holdN; } break;
+        case 2: e1 = 1; v.cnt -= n; if (v.cnt <= 0) v.st = 3; break;
+        case 3: e1 = e0 * kc.decB; if (e1 <= kc.sus) { e1 = kc.sus; v.st = 4; } break;
+        case 4: e1 = kc.sus; break;
+        case 5: e1 = e0 * kc.relB; if (e1 < 1e-5) dead = true; break;
+        case 6: e1 = e0 * this.killB; if (e1 < 1e-4) dead = true; break;
+      }
+      const ch = v.ch;
+      let pp = kc.pan + this.chPanV[ch]; pp = pp < -1 ? -1 : pp > 1 ? 1 : pp;
+      const pi = ((pp + 1) * 511.5 + 0.5) | 0, S = kc.gainBase * v.velG * this.chGain[ch];
+      const tl = e1 * S * PAN_L[pi], tr = e1 * S * PAN_R[pi];
+      let gl0, gr0;
+      if (v.fresh) { gl0 = e0 * S * PAN_L[pi]; gr0 = e0 * S * PAN_R[pi]; } else { gl0 = v.gl; gr0 = v.gr; }
+      const s = v.startAt; v.startAt = 0; v.fresh = false; v.gl = tl; v.gr = tr;
+      if (!dead && v.st >= 3 && v.st < 6 && tl + tr < 1e-9 && gl0 + gr0 < 1e-9) dead = true;
+      if (!dead && s < n) {
+        v.incNow = v.baseInc * this.chBendMul[ch];
+        try {
+          if (v.looping) mixLoop(v, L, R, n, s, gl0, gr0, (tl - gl0) / n, (tr - gr0) / n, cubic);
+          else mixNoLoop(v, L, R, n, s, gl0, gr0, (tl - gl0) / n, (tr - gr0) / n, cubic);
+          if (v.done || v.pos !== v.pos || v.z !== v.z) dead = true;
+        } catch (e) { dead = true; this.errCount++; }
+      }
+      v.age += n; v.e = e1;
+      if (dead) {
+        if (v.st === 6) this.nKill--;
+        this.unlinkKey(v); v.st = 7; v.kc = null; v.data = null;
+        const last = vs.pop(); if (last !== v) vs[vi] = last;
+        if (this.pool.length < 20000) this.pool.push(v);
+      }
+    }
+  }
+  processBlock(L, R, n) {
+    const sr = this.sr;
+    if (this.playing && this.times) {
+      const tEnd = this.t + n / sr * this.speed, tm = this.times, mg = this.msgs, N = tm.length, k = sr / this.speed;
+      const useLag = this.lagEnabled && this.lagRegions.length > 0;
+      let i = this.pi;
+      if (useLag) {
+        let last = this.lastFire;
+        while (i < N) {
+          const et = tm[i];
+          let f = et + this.lagAt(et); if (f < last) f = last;
+          if (f >= tEnd) break;
+          last = f;
+          let off = ((f - this.t) * k) | 0; if (off < 0) off = 0; else if (off >= n) off = n - 1;
+          try { this.dispatch(mg[i], off); } catch (e) { this.errCount++; }
+          i++;
+        }
+        this.lastFire = last;
+      } else {
+        while (i < N && tm[i] < tEnd) {
+          let off = ((tm[i] - this.t) * k) | 0; if (off < 0) off = 0; else if (off >= n) off = n - 1;
+          try { this.dispatch(mg[i], off); } catch (e) { this.errCount++; } i++;
+        }
+      }
+      this.pi = i; this.t = tEnd;
+      if (i >= N) {
+        this.songDone = true;
+        const endLimit = this.maxLagEnd() + 12;
+        if (this.voices.length === 0 || this.t > endLimit) { this.playing = false; this.endedFlag = true; }
+      }
+    }
+    if (this.live.length) { const q = this.live; this.live = []; for (let i = 0; i < q.length; i++) { try { this.dispatch(q[i], 0); } catch (e) { this.errCount++; } } }
+    this.cull();
+    for (let i = 0; i < n; i++) { L[i] = 0; R[i] = 0; }
+    this.renderVoices(L, R, n);
+    if (this.voices.length > this.peak) this.peak = this.voices.length;
+    const rv = this.cfg.reverb; if (rv > 0.001) this.rv.process(L, R, n, rv * 3);
+    const m = this.cfg.master;
+    let pk = 0;
+    for (let i = 0; i < n; i++) { const a = L[i] < 0 ? -L[i] : L[i], b = R[i] < 0 ? -R[i] : R[i]; if (a > pk) pk = a; if (b > pk) pk = b; }
+    pk *= m;
+    const target = pk > 0.95 ? 0.95 / pk : 1, g0 = this.limG;
+    let g1 = target < g0 ? target : g0 + (target - g0) * 0.01; if (g1 > 1) g1 = 1;
+    this.limG = g1;
+    const rampN = g1 < g0 ? Math.min(32, n) : n, dg = (g1 - g0) / rampN;
+    let g = g0;
+    for (let i = 0; i < n; i++) {
+      let a = L[i] * m * g, b = R[i] * m * g;
+      if (i < rampN) g += dg;
+      if (a > 0.9 || a < -0.9) a = (a > 0 ? 1 : -1) * (0.9 + 0.1 * Math.tanh((Math.abs(a) - 0.9) / 0.1));
+      if (b > 0.9 || b < -0.9) b = (b > 0 ? 1 : -1) * (0.9 + 0.1 * Math.tanh((Math.abs(b) - 0.9) / 0.1));
+      L[i] = a === a ? a : 0; R[i] = b === b ? b : 0;
+    }
+  }
+  getStats() {
+    const keys = new Uint8Array(128), vs = this.voices;
+    for (let i = 0; i < vs.length; i++) { const v = vs[i]; if (v.st < 5 && !v.sust) keys[v.key] = 1; }
+    const r = { t: this.t, active: vs.length - this.nKill, peak: this.peak, notes: this.noteCount, dropped: this.dropped, keys: keys, ended: this.endedFlag, playing: this.playing };
+    this.peak = vs.length; this.endedFlag = false; return r;
+  }
+}
+</script>
+
+<!-- ======================= AudioWorklet processor ======================= -->
+<script type="text/plain" id="proc">
+class SynthProcessor extends AudioWorkletProcessor {
+  constructor() {
+    super();
+    this.s = new Synth(sampleRate); this.sfMap = new Map(); this.order = [];
+    this.sc = 0; this.win = 0; this.busy = 0; this.load = 0; this.faults = 0; this.ft = [];
+    this.now = (typeof performance !== 'undefined' && performance.now) ? function () { return performance.now(); } : function () { return Date.now(); };
+    this.port.onmessage = (e) => {
+      try { this.onMsg(e.data); }
+      catch (err) { this.port.postMessage({ fault: 'message error: ' + String((err && err.message) || err) }); }
+    };
+  }
+  refresh() {
+    const out = [];
+    for (const id of this.order) { const sf = this.sfMap.get(id); if (sf) out.push(sf); }
+    for (const [id, sf] of this.sfMap) if (this.order.indexOf(id) < 0) out.push(sf);
+    this.s.setSFs(out);
+  }
+  onMsg(m) {
+    const s = this.s;
+    switch (m.t) {
+      case 'sf':
+        try { this.sfMap.set(m.id, Synth.makeSF(m)); this.refresh(); }
+        catch (err) { this.sfMap.delete(m.id); this.port.postMessage({ sfFail: m.id, msg: String((err && err.message) || err) }); }
+        break;
+      case 'rmsf': this.sfMap.delete(m.id); this.refresh(); break;
+      case 'sfOrder': this.order = m.ids; this.refresh(); break;
+      case 'song': s.setSong(m.times, m.msgs, m.ctl, m.dur); break;
+      case 'play': s.play(); break;
+      case 'pause': s.pause(); break;
+      case 'stop': s.playing = false; s.seek(0); break;
+      case 'seek': s.seek(Math.max(0, +m.time || 0)); break;
+      case 'speed': s.speed = Math.min(16, Math.max(0.05, +m.v || 1)); break;
+      case 'cfg': s.setCfg(m.cfg); break;
+      case 'lag': s.setLag(m.enabled, m.regions); break;
+      case 'midi': if (s.live.length < 4096) s.live.push(m.m); break;
+      case 'panic': s.allOff(); break;
+    }
+  }
+  fault(err, L, R) {
+    this.faults++;
+    const now = (typeof currentTime !== 'undefined') ? currentTime : this.faults;
+    this.ft.push(now); while (this.ft.length && now - this.ft[0] > 3) this.ft.shift();
+    try { this.s.hardReset(); } catch (e) {}
+    L.fill(0); if (R !== L) R.fill(0);
+    let msg = String((err && err.message) || err);
+    if (this.ft.length >= 5) { this.s.playing = false; msg += ' (repeated, playback paused)'; this.ft.length = 0; }
+    this.port.postMessage({ fault: msg });
+  }
+  process(inputs, outputs) {
+    const o = outputs[0], L = o[0], R = o[1] || o[0], n = L.length, s = this.s;
+    const t0 = this.now();
+    try { s.processBlock(L, R, n); } catch (err) { this.fault(err, L, R); }
+    this.busy += this.now() - t0; this.sc += n; this.win += n;
+    if (this.win >= sampleRate * 0.1) {
+      const load = this.busy / (this.win / sampleRate * 1000);
+      this.load = this.load * 0.5 + load * 0.5;
+      if (s.cfg.autoLoad) {
+        if (load > 0.8) s.scale = Math.max(0.03, s.scale * (load > 1.2 ? 0.6 : 0.85));
+        else if (load < 0.55 && s.scale < 1) s.scale = Math.min(1, s.scale + 0.02);
+      } else s.scale = 1;
+      this.busy = 0; this.win = 0;
+    }
+    if (this.sc >= sampleRate * 0.05) {
+      this.sc = 0;
+      const st = s.getStats(); st.load = this.load; st.scale = s.scale; st.faults = this.faults + s.errCount;
+      this.port.postMessage(st);
+    }
+    return true;
+  }
+}
+registerProcessor('blackout-synth', SynthProcessor);
+</script>
+
+<!-- ======================= Loader worker (SF2 + MIDI parsing) ======================= -->
+<script type="text/plain" id="loader">
+onmessage = async function (e) {
+  const m = e.data;
+  try {
+    const buf = await m.blob.arrayBuffer();
+    if (m.type === 'sf') {
+      const sf = parseSF2(buf);
+      postMessage({ type: 'sf', id: m.id, name: sf.name, smpl: sf.smpl, presets: sf.presets }, [sf.smpl.buffer]);
+    } else {
+      const r = parseMIDI(buf, function (p) { postMessage({ type: 'prog', id: m.id, p: p }); });
+      r.type = 'midi'; r.id = m.id;
+      postMessage(r, [r.times.buffer, r.msgs.buffer, r.ctl.buffer]);
+    }
+  } catch (err) { postMessage({ type: 'err', id: m.id, msg: String((err && err.message) || err) + ((err instanceof RangeError) ? ' (file too large for browser memory?)' : '') }); }
+};
+</script>
+
+<!-- ======================= Offline WAV export worker ======================= -->
+<script type="text/plain" id="export">
+let cancelled = false;
+onmessage = async function (e) {
+  const m = e.data;
+  if (m.type === 'cancel') { cancelled = true; return; }
+  try {
+    const sr = m.sr, syn = new Synth(sr);
+    syn.setCfg(Object.assign({}, m.cfg, { maxVoices: m.maxVoices, interp: 1, autoLoad: false }));
+    if (m.lag) syn.setLag(m.lag.enabled, m.lag.regions);
+    const list = [];
+    for (const b of m.sfs) { postMessage({ type: 'stage', s: 'Loading SoundFonts...' }); const sf = parseSF2(await b.arrayBuffer()); list.push(Synth.makeSF(sf)); }
+    syn.setSFs(list);
+    postMessage({ type: 'stage', s: 'Parsing MIDI...' });
+    const mid = parseMIDI(await m.midi.arrayBuffer());
+    syn.setSong(mid.times, mid.msgs, mid.ctl, mid.dur); syn.speed = m.speed || 1; syn.play();
+    const flt = m.bits === 32, bps = flt ? 4 : 2;
+    const mkWav = function (parts, nFrames) {
+      const dataBytes = nFrames * 2 * bps, hdr = new ArrayBuffer(44), dv = new DataView(hdr);
+      const w = function (o, s) { for (let i = 0; i < s.length; i++) dv.setUint8(o + i, s.charCodeAt(i)); };
+      w(0, 'RIFF'); dv.setUint32(4, 36 + dataBytes, true); w(8, 'WAVE'); w(12, 'fmt '); dv.setUint32(16, 16, true);
+      dv.setUint16(20, flt ? 3 : 1, true); dv.setUint16(22, 2, true); dv.setUint32(24, sr, true); dv.setUint32(28, sr * 2 * bps, true);
+      dv.setUint16(32, 2 * bps, true); dv.setUint16(34, bps * 8, true); w(36, 'data'); dv.setUint32(40, dataBytes, true);
+      return new Blob([hdr].concat(parts), { type: 'audio/wav' });
+    };
+    const L = new Float32Array(128), R = new Float32Array(128);
+    const chunkBlocks = 2048;
+    let parts = [], partBytes = 0, partFrames = 0, frames = 0, faults = 0, finished = false;
+    while (!finished) {
+      if (cancelled) { postMessage({ type: 'cancelled' }); return; }
+      const buf = flt ? new Float32Array(chunkBlocks * 256) : new Int16Array(chunkBlocks * 256);
+      let k = 0;
+      for (let b = 0; b < chunkBlocks; b++) {
+        try { syn.processBlock(L, R, 128); }
+        catch (err) {
+          faults++; syn.hardReset(); L.fill(0); R.fill(0);
+          if (faults > 500) throw new Error('Too many engine errors: ' + ((err && err.message) || err));
+        }
+        frames += 128;
+        for (let i = 0; i < 128; i++) {
+          if (flt) { buf[k++] = L[i]; buf[k++] = R[i]; }
+          else { let a = L[i], c = R[i]; a = a < -1 ? -1 : a > 1 ? 1 : a; c = c < -1 ? -1 : c > 1 ? 1 : c; buf[k++] = a < 0 ? a * 32768 : a * 32767; buf[k++] = c < 0 ? c * 32768 : c * 32767; }
+        }
+        if (!syn.playing && syn.songDone) { finished = true; break; }
+        const lagExtra = (typeof syn.maxLagEnd === 'function') ? Math.max(0, syn.maxLagEnd() - mid.dur) : 0;
+        if (frames > (mid.dur / (m.speed || 1) + lagExtra + 15) * sr) { finished = true; break; }
+      }
+      parts.push(buf.subarray(0, k)); partBytes += k * bps; partFrames += k / 2;
+      if (!finished && partBytes >= 1.5e9) {
+        postMessage({ type: 'part', blob: mkWav(parts, partFrames) });
+        parts = []; partBytes = 0; partFrames = 0;
+      }
+      postMessage({ type: 'prog', t: syn.t, dur: mid.dur, active: syn.voices.length });
+      await new Promise(function (r) { setTimeout(r, 0); });
+    }
+    postMessage({ type: 'done', blob: mkWav(parts, partFrames), seconds: frames / sr, faults: faults });
+  } catch (err) { postMessage({ type: 'err', msg: String((err && err.message) || err) + ((err instanceof RangeError) ? ' (out of memory - try 16-bit or a lower sample rate)' : '') }); }
+};
+</script>
+
+<!-- ======================= UI ======================= -->
+<script>
+(() => {
+'use strict';
+const $ = id => document.getElementById(id);
+const src = id => $(id).textContent;
+const mkURL = code => URL.createObjectURL(new Blob([code], { type: 'text/javascript' }));
+const CORE = src('core') + '\n';
+const WORKLET_CODE = CORE + src('proc');
+const dataURL = code => { const u = new TextEncoder().encode(code); let bin = ''; for (let i = 0; i < u.length; i += 0x8000) bin += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000)); return 'data:text/javascript;base64,' + btoa(bin); };
+const URLS = { worklet: mkURL(WORKLET_CODE), loader: mkURL(CORE + src('loader')), exporter: mkURL(CORE + src('export')) };
+
+/* ---------- settings ---------- */
+const SPEC = [
+  { k: 'maxVoices', label: 'Max voices', type: 'log', min: 256, step: 256, max: 16384, def: 2000 },
+  { k: 'master', label: 'Master volume', min: 0, max: 1.5, step: 0.01, def: 0.6 },
+  { k: 'reverb', label: 'Reverb', min: 0, max: 1, step: 0.01, def: 0.12 },
+  { k: 'minNoteMs', label: 'Min note length (ms)', min: 0, max: 100, step: 1, def: 10 },
+  { k: 'maxRel', label: 'Max release (s)', min: 0.05, max: 10, step: 0.05, def: 2 },
+  { k: 'keyLimit', label: 'Max per key (0=off)', min: 0, max: 64, step: 1, def: 0 },
+  { k: 'velMin', label: 'Ignore velocity <', min: 0, max: 127, step: 1, def: 0 },
+  { k: 'filter', label: 'Instrument filters', type: 'bool', def: true },
+  { k: 'interp', label: 'Interpolation', type: 'sel', opts: [[0, 'Linear (fast)'], [1, 'Cubic (better)']], def: 0 },
+  { k: 'autoLoad', label: 'Auto overload guard', type: 'bool', def: true }
+];
+let saved = {};
+try { saved = JSON.parse(localStorage.getItem('blackoutSynth.cfg') || '{}'); } catch (e) {}
+const cfg = {};
+for (const s of SPEC) cfg[s.k] = saved[s.k] !== undefined ? saved[s.k] : s.def;
+const eng = { sr: saved._sr || '0', lat: saved._lat || 'interactive' };
+$('optSR').value = eng.sr; $('optLat').value = eng.lat;
+function saveCfg() { try { localStorage.setItem('blackoutSynth.cfg', JSON.stringify(Object.assign({ _sr: eng.sr, _lat: eng.lat }, cfg))); } catch (e) {} }
+function pushCfg() { if (engine) engine.node.port.postMessage({ t: 'cfg', cfg: cfg }); saveCfg(); }
+const LOGMAX = 1000;
+(function build() {
+  const box = $('settings');
+  for (const s of SPEC) {
+    const row = document.createElement('div'); row.className = 'set';
+    const lab = document.createElement('label'); lab.textContent = s.label; row.appendChild(lab);
+    let inp, out = document.createElement('output');
+    if (s.type === 'bool') {
+      inp = document.createElement('input'); inp.type = 'checkbox'; inp.checked = !!cfg[s.k];
+      inp.onchange = () => { cfg[s.k] = inp.checked; pushCfg(); };
+      out.textContent = '';
+    } else if (s.type === 'sel') {
+      inp = document.createElement('select');
+      for (const [v, t] of s.opts) { const o = document.createElement('option'); o.value = v; o.textContent = t; inp.appendChild(o); }
+      inp.value = cfg[s.k]; inp.onchange = () => { cfg[s.k] = +inp.value; pushCfg(); };
+    } else {
+      inp = document.createElement('input'); inp.type = 'range';
+      if (s.type === 'log') {
+        inp.min = 0; inp.max = LOGMAX; inp.step = 1;
+        const toV = x => Math.round(s.min * Math.pow(s.max / s.min, x / LOGMAX));
+        inp.value = Math.round(Math.log(cfg[s.k] / s.min) / Math.log(s.max / s.min) * LOGMAX);
+        out.textContent = cfg[s.k];
+        inp.oninput = () => { cfg[s.k] = toV(+inp.value); out.textContent = cfg[s.k]; pushCfg(); };
+      } else {
+        inp.min = s.min; inp.max = s.max; inp.step = s.step; inp.value = cfg[s.k]; out.textContent = cfg[s.k];
+        inp.oninput = () => { cfg[s.k] = +inp.value; out.textContent = cfg[s.k]; pushCfg(); };
+      }
+    }
+    row.appendChild(inp); row.appendChild(out); box.appendChild(row);
+  }
+})();
+
+/* ---------- loader worker ---------- */
+let loader = null, reqId = 0; const pend = new Map();
+function getLoader() {
+  if (loader) return loader;
+  loader = new Worker(URLS.loader);
+  { const w = loader; w.onerror = w.onmessageerror = () => { if (loader === w) loader = null; try { w.terminate(); } catch (x) {} for (const p of pend.values()) p.rej(new Error('File loader crashed (probably out of memory)')); pend.clear(); }; }
+  loader.onmessage = e => {
+    const m = e.data, p = pend.get(m.id); if (!p) return;
+    if (m.type === 'prog') { if (p.prog) p.prog(m.p); return; }
+    pend.delete(m.id);
+    if (m.type === 'err') p.rej(new Error(m.msg)); else p.res(m);
+  };
+  return loader;
+}
+function work(type, blob, prog) {
+  return new Promise((res, rej) => { const id = ++reqId; pend.set(id, { res, rej, prog }); getLoader().postMessage({ type, id, blob }); });
+}
+
+/* ---------- audio engine ---------- */
+let engine = null, enginePromise = null;
+function ensureEngine() {
+  if (engine) return Promise.resolve(engine);
+  if (enginePromise) return enginePromise;
+  enginePromise = (async () => {
+    const opts = { latencyHint: eng.lat };
+    if (+eng.sr) opts.sampleRate = +eng.sr;
+    let ctx;
+    try { ctx = new AudioContext(opts); } catch (e) { delete opts.sampleRate; ctx = new AudioContext(opts); }
+    try { await ctx.audioWorklet.addModule(URLS.worklet); }
+    catch (e) {
+      try { await ctx.audioWorklet.addModule(dataURL(WORKLET_CODE)); }
+      catch (e2) { try { ctx.close(); } catch (x) {} throw e; }
+    }
+    const node = new AudioWorkletNode(ctx, 'blackout-synth', { numberOfInputs: 0, outputChannelCount: [2] });
+    node.connect(ctx.destination);
+    node.port.onmessage = onStats;
+    node.onprocessorerror = () => recover('audio processor crashed');
+    ctx.onstatechange = () => { if (engine && engine.ctx === ctx && playing && (ctx.state === 'suspended' || ctx.state === 'interrupted')) ctx.resume().catch(() => {}); };
+    lastStatAt = performance.now();
+    node.port.postMessage({ t: 'cfg', cfg: cfg });
+    node.port.postMessage({ t: 'speed', v: +$('speed').value || 1 });
+    node.port.postMessage({ t: 'lag', enabled: $('lagEnable').checked, regions: lagRegions });
+    engine = { ctx, node };
+    return engine;
+  })();
+  enginePromise.catch(() => { enginePromise = null; });
+  return enginePromise;
+}
+
+/* ---------- health / crash recovery ---------- */
+let lastStatAt = performance.now(), restarting = false, recoverLog = [];
+function health(msg, warn) {
+  const el = $('health'); el.textContent = msg; el.className = 'info' + (warn ? ' warn' : '');
+  clearTimeout(health.t); if (msg) health.t = setTimeout(() => { el.textContent = ''; }, 15000);
+}
+async function restartEngine() {
+  if (engine) { const e = engine; engine = null; enginePromise = null; try { e.node.onprocessorerror = null; e.node.port.onmessage = null; e.node.disconnect(); await e.ctx.close(); } catch (x) {} }
+  enginePromise = null; playing = false; setPlayLabel();
+  const items = sfList.slice(); items.forEach(s => { s.state = 'loading'; }); renderSF();
+  for (const it of items) await pushSF(it);
+  if (song) await loadMidi(song.blob, song.name);
+}
+async function recover(why) {
+  if (restarting) return;
+  const now = performance.now(); recoverLog = recoverLog.filter(t => now - t < 60000);
+  if (recoverLog.length >= 3) { health('Audio engine keeps failing (' + why + '). Lower Max voices or use Safe latency, then press "Apply & restart engine".', true); return; }
+  recoverLog.push(now); restarting = true;
+  const wasPlaying = playing, at = lastT;
+  health('Recovering audio engine (' + why + ')...', true);
+  try {
+    await restartEngine();
+    if (song) {
+      const e = await ensureEngine();
+      e.node.port.postMessage({ t: 'seek', time: at }); lastT = at;
+      if (wasPlaying) { await e.ctx.resume(); e.node.port.postMessage({ t: 'play' }); playing = true; setPlayLabel(); }
+    }
+    health('Audio engine recovered' + (wasPlaying && song ? ' - playback resumed at ' + fmt(at) : '') + '.', false);
+  } catch (err) { health('Recovery failed: ' + err.message, true); }
+  restarting = false;
+}
+setInterval(() => {
+  if (engine && playing && !restarting && engine.ctx.state === 'running' && performance.now() - lastStatAt > 3000) recover('audio stalled');
+}, 1000);
+
+/* ---------- SoundFonts ---------- */
+let sfList = [], sfSeq = 0;
+function renderSF() {
+  const box = $('sfList'); box.innerHTML = '';
+  sfList.forEach((it, i) => {
+    const d = document.createElement('div'); d.className = 'sf';
+    const nm = document.createElement('div'); nm.className = 'nm'; nm.textContent = it.name + ' (' + (it.size / 1048576).toFixed(1) + ' MB)'; d.appendChild(nm);
+    const st = document.createElement('div'); st.className = 'st ' + (it.state === 'error' ? 'err' : it.state === 'ready' ? 'ok' : '');
+    st.textContent = it.state === 'loading' ? 'loading…' : (it.info || ''); d.appendChild(st);
+    const mk = (t, f, dis) => { const b = document.createElement('button'); b.className = 'sm'; b.textContent = t; b.disabled = !!dis; b.onclick = f; d.appendChild(b); };
+    mk('↑', () => moveSF(i, -1), i === 0); mk('↓', () => moveSF(i, 1), i === sfList.length - 1); mk('✕', () => removeSF(i));
+    box.appendChild(d);
+  });
+}
+function sendOrder() { if (engine) engine.node.port.postMessage({ t: 'sfOrder', ids: sfList.filter(s => s.state === 'ready').map(s => s.id) }); }
+function moveSF(i, d) { const j = i + d; if (j < 0 || j >= sfList.length) return; [sfList[i], sfList[j]] = [sfList[j], sfList[i]]; renderSF(); sendOrder(); }
+function removeSF(i) { const it = sfList.splice(i, 1)[0]; if (engine) engine.node.port.postMessage({ t: 'rmsf', id: it.id }); renderSF(); }
+async function pushSF(it) {
+  it.state = 'loading'; renderSF();
+  try {
+    const e = await ensureEngine();
+    const r = await work('sf', it.blob);
+    if (sfList.indexOf(it) < 0) return;
+    e.node.port.postMessage({ t: 'sf', id: it.id, smpl: r.smpl, presets: r.presets, name: r.name }, [r.smpl.buffer]);
+    it.state = 'ready'; it.info = r.presets.length + ' presets';
+  } catch (err) { it.state = 'error'; it.info = err.message; }
+  renderSF(); sendOrder();
+}
+function addSF(blob, name) { const it = { id: ++sfSeq, blob, name, size: blob.size, state: 'loading', info: '' }; sfList.push(it); return pushSF(it); }
+
+/* ---------- MIDI song ---------- */
+let song = null, dur = 0, playing = false;
+const fmt = t => { t = Math.max(0, t); const m = Math.floor(t / 60); return m + ':' + (t - m * 60).toFixed(1).padStart(4, '0'); };
+async function loadMidi(blob, name) {
+  $('midInfo').textContent = 'Parsing ' + name + '…'; $('midProg').style.width = '0%';
+  try {
+    const e = await ensureEngine();
+    const r = await work('midi', blob, p => { $('midProg').style.width = (p * 100).toFixed(0) + '%'; });
+    e.node.port.postMessage({ t: 'song', times: r.times, msgs: r.msgs, ctl: r.ctl, dur: r.dur }, [r.times.buffer, r.msgs.buffer, r.ctl.buffer]);
+    song = { blob, name }; dur = r.dur; playing = false; setPlayLabel();
+    $('midInfo').textContent = name + ' · ' + r.notes.toLocaleString() + ' notes · ' + r.events.toLocaleString() + ' events · ' + r.tracks + ' tracks · ' + fmt(r.dur);
+    $('tDur').textContent = fmt(dur); $('tNow').textContent = fmt(0); $('seek').value = 0; drawLagMap();
+    $('midProg').style.width = '100%';
+  } catch (err) { $('midInfo').textContent = 'Error: ' + err.message; }
+}
+
+/* ---------- transport ---------- */
+function setPlayLabel() { $('btnPlay').textContent = playing ? 'Pause' : 'Play'; }
+$('btnPlay').onclick = async () => {
+  if (!song) { $('midInfo').textContent = 'Load a MIDI file first.'; return; }
+  const e = await ensureEngine(); await e.ctx.resume();
+  if (!playing) { if (lastT >= dur - 0.05) e.node.port.postMessage({ t: 'stop' }); e.node.port.postMessage({ t: 'play' }); playing = true; }
+  else { e.node.port.postMessage({ t: 'pause' }); playing = false; }
+  setPlayLabel();
+};
+$('btnStop').onclick = () => { if (!engine) return; engine.node.port.postMessage({ t: 'stop' }); playing = false; setPlayLabel(); lastT = 0; $('tNow').textContent = fmt(0); $('seek').value = 0; };
+let dragging = false, lastT = 0;
+$('seek').oninput = () => { dragging = true; $('tNow').textContent = fmt($('seek').value / 1000 * dur); };
+$('seek').onchange = () => { dragging = false; if (engine) { const t = $('seek').value / 1000 * dur; engine.node.port.postMessage({ t: 'seek', time: t }); lastT = t; } };
+$('speed').onchange = () => { if (engine) engine.node.port.postMessage({ t: 'speed', v: Math.max(0.1, +$('speed').value || 1) }); };
+
+/* ---------- lag mode ---------- */
+let lagRegions = [];
+const LAG_TYPES = { stall: 'Stall & catch up', delay: 'Constant delay', ramp: 'Ramp & recover' };
+const LAG_COL = { stall: '#ff5f6d', delay: '#ffb347', ramp: '#8b7bff' };
+const LAG_HELP = 'Stall & catch up: nothing plays for the duration, then everything that was held back plays at once. Constant delay: events in the region are heard later by the delay amount. Ramp & recover: the delay grows to its peak, then shrinks back to zero.';
+const numOr = (v, d) => { v = +v; return v === v && v >= 0 && v < 1e7 ? v : d; };
+function normLag(r) {
+  const o = { type: LAG_TYPES[r && r.type] ? r.type : 'stall', on: !(r && r.on === false) };
+  o.start = numOr(r && r.start, 0);
+  o.end = Math.max(o.start, numOr(r && r.end, o.start));
+  o.amount = Math.min(600, numOr(r && r.amount, 0));
+  o.lagEnd = Math.max(o.end, numOr(r && r.lagEnd, o.end));
+  if (o.type === 'stall') o.amount = 0;
+  return o;
+}
+const round3 = x => Math.round(x * 1000) / 1000;
+function sortLag() { lagRegions.sort((a, b) => a.start - b.start); }
+function pushLag() {
+  if (engine) engine.node.port.postMessage({ t: 'lag', enabled: $('lagEnable').checked, regions: lagRegions });
+  lagSummary(); drawLagMap();
+}
+function lagSummary() {
+  const on = lagRegions.filter(r => r.on !== false);
+  let worst = 0;
+  for (const r of on) worst = Math.max(worst, r.type === 'stall' ? r.end - r.start : r.amount);
+  $('lagSummary').textContent = on.length ? on.length + ' active region' + (on.length === 1 ? '' : 's') + ' · longest lag ' + worst.toFixed(2) + ' s' : 'No lag regions yet';
+  $('lagHelp').textContent = LAG_HELP;
+}
+function lagGo(t) {
+  if (!engine || !song) return;
+  t = Math.max(0, t);
+  engine.node.port.postMessage({ t: 'seek', time: t }); lastT = t;
+  $('tNow').textContent = fmt(t); if (dur > 0) $('seek').value = Math.min(1000, t / dur * 1000);
+}
+const lcv = $('lagMap'), lcx = lcv.getContext('2d');
+function drawLagMap() {
+  const dpr = window.devicePixelRatio || 1, W = lcv.clientWidth, H = lcv.clientHeight;
+  if (!W) return;
+  if (lcv.width !== Math.round(W * dpr)) { lcv.width = Math.round(W * dpr); lcv.height = Math.round(H * dpr); }
+  lcx.setTransform(dpr, 0, 0, dpr, 0, 0); lcx.clearRect(0, 0, W, H);
+  let span = dur || 0;
+  for (const r of lagRegions) span = Math.max(span, r.type === 'ramp' ? r.lagEnd : r.end);
+  if (span <= 0) span = 1;
+  lcx.fillStyle = '#1b2133'; lcx.fillRect(0, 0, W, H);
+  for (const r of lagRegions) {
+    const x0 = r.start / span * W, x1 = (r.type === 'ramp' ? r.lagEnd : r.end) / span * W;
+    lcx.globalAlpha = r.on === false ? 0.25 : 0.9; lcx.fillStyle = LAG_COL[r.type] || '#fff';
+    lcx.fillRect(x0, 4, Math.max(2, x1 - x0), H - 8);
+  }
+  lcx.globalAlpha = 1;
+  if (dur > 0) { lcx.fillStyle = '#3ee0ff'; lcx.fillRect(Math.min(W - 1, dur / span * W) - 1, 0, 2, H); }
+}
+window.addEventListener('resize', drawLagMap);
+function renderLag() {
+  const box = $('lagList'); box.innerHTML = '';
+  if (!lagRegions.length) {
+    const e = document.createElement('div'); e.className = 'info';
+    e.textContent = 'No lag regions. Add one at the playhead, paste JSON, or scan a video below.'; box.appendChild(e);
+  }
+  const MAXROWS = 500;
+  lagRegions.slice(0, MAXROWS).forEach((r, i) => {
+    const d = document.createElement('div'); d.className = 'lagRow' + (r.on === false ? ' off' : '');
+    const on = document.createElement('input'); on.type = 'checkbox'; on.checked = r.on !== false;
+    on.onchange = () => { r.on = on.checked; d.className = 'lagRow' + (r.on ? '' : ' off'); pushLag(); };
+    d.appendChild(on);
+    const ty = document.createElement('select');
+    for (const k in LAG_TYPES) { const o = document.createElement('option'); o.value = k; o.textContent = LAG_TYPES[k]; ty.appendChild(o); }
+    ty.value = r.type;
+    ty.onchange = () => { r.type = ty.value; if (r.type === 'stall') r.amount = 0; else if (!r.amount) r.amount = Math.max(0.1, round3(r.end - r.start)); Object.assign(r, normLag(r)); renderLag(); pushLag(); };
+    d.appendChild(ty);
+    const num = (label, get, set, step) => {
+      const w = document.createElement('label'); w.append(label + ' ');
+      const inp = document.createElement('input'); inp.type = 'number'; inp.min = 0; inp.step = step || 0.1; inp.value = round3(get());
+      inp.oninput = () => { set(numOr(inp.value, 0)); pushLag(); };
+      inp.onchange = () => { Object.assign(r, normLag(r)); sortLag(); renderLag(); pushLag(); };
+      w.appendChild(inp); d.appendChild(w);
+    };
+    num('Start (s)', () => r.start, v => { const dd = r.end - r.start; r.start = v; if (r.type === 'stall') r.end = v + dd; });
+    if (r.type === 'stall') num('Duration (s)', () => r.end - r.start, v => { r.end = r.start + v; });
+    else if (r.type === 'delay') { num('End (s)', () => r.end, v => { r.end = v; }); num('Delay (s)', () => r.amount, v => { r.amount = v; }, 0.05); }
+    else { num('Peak at (s)', () => r.end, v => { r.end = v; }); num('Peak delay (s)', () => r.amount, v => { r.amount = v; }, 0.05); num('Back to 0 at (s)', () => r.lagEnd, v => { r.lagEnd = v; }); }
+    const sp = document.createElement('span'); sp.className = 'sp'; d.appendChild(sp);
+    const go = document.createElement('button'); go.className = 'sm'; go.textContent = '▶ Go'; go.title = 'Jump to 1 s before this region';
+    go.onclick = () => lagGo(r.start - 1); d.appendChild(go);
+    const rm = document.createElement('button'); rm.className = 'sm'; rm.textContent = '✕';
+    rm.onclick = () => { lagRegions.splice(i, 1); renderLag(); pushLag(); }; d.appendChild(rm);
+    box.appendChild(d);
+  });
+  if (lagRegions.length > MAXROWS) {
+    const e = document.createElement('div'); e.className = 'info'; e.textContent = '…and ' + (lagRegions.length - MAXROWS) + ' more regions (all of them are still applied).'; box.appendChild(e);
+  }
+  lagSummary(); drawLagMap();
+}
+$('lagEnable').onchange = pushLag;
+$('lagAdd').onclick = () => {
+  const type = $('lagType').value, st = round3(Math.max(0, lastT || 0));
+  const r = type === 'stall' ? { type, start: st, end: st + 0.5, amount: 0, lagEnd: st + 0.5 }
+    : type === 'delay' ? { type, start: st, end: st + 5, amount: 1, lagEnd: st + 5 }
+    : { type, start: st, end: st + 5, amount: 1, lagEnd: st + 15 };
+  lagRegions.push(normLag(r)); sortLag(); renderLag(); pushLag();
+  if (!$('lagEnable').checked) { $('lagEnable').checked = true; pushLag(); }
+};
+$('lagGo').onclick = () => { const on = lagRegions.filter(r => r.on !== false); if (on.length) lagGo(on[0].start - 1); };
+$('lagClear').onclick = () => { if (lagRegions.length > 5 && !confirm('Remove all ' + lagRegions.length + ' lag regions?')) return; lagRegions = []; renderLag(); pushLag(); };
+$('lagCopy').onclick = async () => {
+  const txt = JSON.stringify(lagRegions.map(r => ({ type: r.type, start: round3(r.start), end: round3(r.end), amount: round3(r.amount), lagEnd: round3(r.lagEnd), on: r.on !== false })));
+  try { await navigator.clipboard.writeText(txt); $('lagHelp').textContent = 'Copied ' + lagRegions.length + ' regions to the clipboard.'; }
+  catch (e) { prompt('Copy this lag JSON:', txt); }
+};
+$('lagPaste').onclick = () => {
+  const txt = prompt('Paste lag JSON:'); if (!txt) return;
+  try {
+    let a = JSON.parse(txt); if (a && !Array.isArray(a) && Array.isArray(a.regions)) a = a.regions;
+    if (!Array.isArray(a)) throw new Error('expected a list of regions');
+    lagRegions = a.slice(0, 200000).map(normLag); sortLag(); renderLag(); pushLag();
+  } catch (err) { alert('Could not read that JSON: ' + err.message); }
+};
+
+/* ---------- video lag scanner ---------- */
+let vidItems = [], vidJob = null;
+const vidThr = $('vidThr');
+vidThr.oninput = () => { $('vidThrO').textContent = vidThr.value; };
+bindDrop($('vidDrop'), $('vidFile'), f => scanVideo(f));
+$('vidCancel').onclick = () => { if (vidJob) vidJob.cancel = true; };
+$('vidOff').oninput = () => renderVid();
+function vidBusy(b) { $('vidCancel').disabled = !b; }
+function renderVid() {
+  const box = $('vidList'); box.innerHTML = '';
+  const off = numOr($('vidOff').value, 0);
+  vidItems.forEach(it => {
+    const d = document.createElement('div'); d.className = 'vidRow';
+    const c = document.createElement('input'); c.type = 'checkbox'; c.checked = it.on; c.onchange = () => { it.on = c.checked; };
+    const t = document.createElement('span'); t.className = 't';
+    t.textContent = 'video ' + fmt(it.a) + '  →  song ' + (it.a - off < 0 ? 'before start' : fmt(it.a - off)) + '  ';
+    const dd = document.createElement('span'); dd.className = 'd'; dd.textContent = (it.kind === 'stutter' ? 'stuttered ' : 'froze ') + it.d.toFixed(2) + ' s';
+    t.appendChild(dd);
+    const cc = document.createElement('span'); cc.className = 'c'; cc.textContent = it.content < 1.5 ? 'empty screen?' : '';
+    d.append(c, t, cc); box.appendChild(d);
+  });
+  $('vidActions').style.display = vidItems.length ? '' : 'none';
+}
+$('vidAdd').onclick = () => {
+  const off = numOr($('vidOff').value, 0), type = $('vidAddType').value, add = [];
+  for (const it of vidItems) {
+    if (!it.on) continue;
+    const st = round3(Math.max(0, it.a - off)), d = round3(it.d);
+    if (it.a + it.d - off <= 0) continue;
+    add.push(normLag(type === 'stall' ? { type, start: st, end: st + d } : type === 'delay' ? { type, start: st, end: st + d, amount: d } : { type, start: st, end: st + d, amount: d, lagEnd: st + 2 * d }));
+  }
+  lagRegions = ($('vidReplace').checked ? [] : lagRegions).concat(add); sortLag(); renderLag();
+  $('lagEnable').checked = true; pushLag();
+  $('vidInfo').textContent = 'Added ' + add.length + ' lag region' + (add.length === 1 ? '' : 's') + '. Lag mode is on - press Play, or render a WAV.';
+};
+function findFreezes(frames, o) {
+  const n = frames.length, fz = new Uint8Array(n);
+  for (let i = 1; i < n; i++) fz[i] = (frames[i].diff <= o.thr && frames[i].ch <= 3) ? 1 : 0;
+  const half = o.seek ? Math.max(o.minMs / 2000, 0.12) : o.minMs / 2000, list = [], fzS = fz.slice();
+  let s = -1;
+  for (let i = 1; i < n; i++) {
+    if (fz[i] && s < 0) s = i;
+    if (s >= 0 && (!fz[i] || i === n - 1)) {
+      const e = fz[i] ? i : i - 1, a = frames[s - 1].t, b = frames[e + 1] ? frames[e + 1].t : frames[e].t;
+      if (b - a >= half) { list.push({ a, b, k: 'freeze' }); for (let k = s; k <= e; k++) fzS[k] = 0; }
+      s = -1;
+    }
+  }
+  if (o.stutter && !o.seek && n > 20) {
+    const pre = new Int32Array(n + 1); for (let i = 0; i < n; i++) pre[i + 1] = pre[i] + fzS[i];
+    const r = new Float32Array(n); let lo = 0, hi = 0;
+    for (let i = 0; i < n; i++) {
+      while (frames[lo].t < frames[i].t - 0.3) lo++;
+      while (hi < n && frames[hi].t <= frames[i].t + 0.3) hi++;
+      r[i] = (pre[hi] - pre[lo]) / Math.max(1, hi - lo);
+    }
+    const base = Float32Array.from(r).sort()[n >> 1], thrR = Math.min(0.9, Math.max(0.35, base + 0.3));
+    let st = -1;
+    for (let i = 0; i < n; i++) {
+      const hot = r[i] >= thrR;
+      if (hot && st < 0) st = i;
+      if (st >= 0 && (!hot || i === n - 1)) { const e = hot ? i : i - 1; list.push({ a: frames[st].t, b: frames[e].t, k: 'stutter' }); st = -1; }
+    }
+  }
+  list.sort((x, y) => x.a - y.a);
+  const merged = [];
+  for (const x of list) {
+    const last = merged[merged.length - 1];
+    if (last && x.a - last.b <= 0.25) { if (x.b > last.b) last.b = x.b; last.n++; if (x.k === 'stutter') last.st = true; } else merged.push({ a: x.a, b: x.b, n: 1, st: x.k === 'stutter' });
+  }
+  const out = [];
+  for (const m of merged) {
+    if (m.b - m.a < o.minMs / 1000) continue;
+    let c = 0, cn = 0; for (let i = 0; i < n; i++) if (frames[i].t >= m.a && frames[i].t <= m.b) { c += frames[i].content; cn++; }
+    const content = cn ? c / cn : 99;
+    if (o.skipEmpty && content < 1.5) continue;
+    out.push({ a: m.a, d: m.b - m.a, content, kind: (m.n >= 3 || m.st) ? 'stutter' : 'freeze', on: true });
+  }
+  return out;
+}
+async function scanVideo(file) {
+  if (vidJob) vidJob.cancel = true;
+  const job = { cancel: false }; vidJob = job;
+  const o = { thr: +vidThr.value || 0.6, minMs: Math.max(30, +$('vidMin').value || 80), rate: +$('vidRate').value || 1, skipEmpty: $('vidEmpty').checked, stutter: $('vidStutter').checked };
+  vidItems = []; renderVid(); vidBusy(true); $('vidProg').style.width = '0%'; $('vidInfo').textContent = 'Loading ' + file.name + '…';
+  const url = URL.createObjectURL(file), v = document.createElement('video');
+  v.muted = true; v.defaultMuted = true; v.playsInline = true; v.preload = 'auto'; v.setAttribute('playsinline', ''); v.setAttribute('muted', '');
+  try {
+    v.src = url;
+    await new Promise((res, rej) => { v.onloadedmetadata = res; v.onerror = () => rej(new Error("This browser can't decode that video. Try an MP4 (H.264) or WebM.")); });
+    const vd = v.duration;
+    if (!isFinite(vd) || vd <= 0) throw new Error('The video has no readable duration. Re-export it as MP4 or WebM.');
+    const W = 96, H = 54, cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+    const cx = cv.getContext('2d', { willReadFrequently: true });
+    const frames = []; let prev = null; const g = new Uint8Array(W * H), hist = new Uint16Array(256), top = Math.floor(H * 0.75) * W;
+    const grab = t => {
+      cx.drawImage(v, 0, 0, W, H);
+      const px = cx.getImageData(0, 0, W, H).data; hist.fill(0);
+      for (let i = 0, j = 0; i < g.length; i++, j += 4) { const y = (px[j] * 77 + px[j + 1] * 150 + px[j + 2] * 29) >> 8; g[i] = y; hist[y]++; }
+      let diff = 999, ch = 99999;
+      if (prev) { diff = 0; ch = 0; for (let i = 0; i < g.length; i++) { let dd = g[i] - prev[i]; if (dd < 0) dd = -dd; diff += dd; if (dd > 16) ch++; } diff /= g.length; }
+      let mode = 0; for (let b = 1; b < 256; b++) if (hist[b] > hist[mode]) mode = b;
+      const bg = mode; let c = 0; for (let i = 0; i < top; i++) { const dd = g[i] - bg; c += dd < 0 ? -dd : dd; }
+      frames.push({ t, diff, ch, content: c / top });
+      if (!prev) prev = new Uint8Array(W * H); prev.set(g);
+    };
+    const prog = t => { $('vidProg').style.width = Math.min(100, t / vd * 100).toFixed(1) + '%'; $('vidInfo').textContent = 'Scanning… ' + fmt(t) + ' / ' + fmt(vd) + ' · ' + frames.length + ' frames'; };
+    if ('requestVideoFrameCallback' in v) {
+      v.playbackRate = o.rate;
+      await new Promise((res, rej) => {
+        let last = performance.now(), fin = false;
+        const done = () => { if (!fin) { fin = true; clearInterval(wd); v.pause(); res(); } };
+        const wd = setInterval(() => { if (!fin && performance.now() - last > 10000) { fin = true; clearInterval(wd); rej(new Error('Video playback stalled while scanning.')); } }, 1000);
+        const cb = (now, md) => {
+          last = performance.now();
+          if (job.cancel) return done();
+          grab(md.mediaTime); if (frames.length % 20 === 0) prog(md.mediaTime);
+          if (v.ended) return done();
+          v.requestVideoFrameCallback(cb);
+        };
+        v.onended = done; v.onerror = () => { if (!fin) { fin = true; clearInterval(wd); rej(new Error('Video error while scanning.')); } };
+        v.requestVideoFrameCallback(cb);
+        v.play().catch(e => { if (!fin) { fin = true; clearInterval(wd); rej(new Error('Could not start video playback: ' + e.message)); } });
+      });
+    } else {
+      const step = 1 / 30;
+      for (let t = 0; t < vd && !job.cancel; t += step) {
+        await new Promise(res => { v.onseeked = res; setTimeout(res, 3000); v.currentTime = t; });
+        grab(v.currentTime); if (frames.length % 10 === 0) prog(t);
+      }
+    }
+    if (frames.length < 3) throw new Error('Could not read any frames from that video.');
+    if (job.cancel) { $('vidInfo').textContent = 'Scan cancelled.'; $('vidProg').style.width = '0%'; }
+    else {
+      o.seek = !('requestVideoFrameCallback' in v); vidItems = findFreezes(frames, o); $('vidProg').style.width = '100%';
+      $('vidInfo').textContent = 'Scanned ' + fmt(frames[frames.length - 1].t) + ' of video (' + frames.length + ' frames) · found ' + vidItems.length + ' lag point' + (vidItems.length === 1 ? '' : 's') + (vidItems.length ? '. Untick any that are not lag, then add them.' : '. Try a higher freeze threshold or a shorter minimum freeze.');
+      renderVid();
+    }
+  } catch (err) { $('vidInfo').textContent = 'Error: ' + err.message; $('vidProg').style.width = '0%'; }
+  finally { if (vidJob === job) { vidJob = null; vidBusy(false); } try { v.removeAttribute('src'); v.load(); } catch (x) {} URL.revokeObjectURL(url); }
+}
+renderLag();
+
+/* ---------- stats + keyboard ---------- */
+const cv = $('kb'), cx = cv.getContext('2d');
+const KB = (() => { const wh = [], bl = []; let w = 0; for (let k = 0; k < 128; k++) { if ([1, 3, 6, 8, 10].includes(k % 12)) bl.push({ k, x: w }); else { wh.push({ k, x: w }); w++; } } return { wh, bl, wn: w }; })();
+let keys = new Uint8Array(128);
+function drawKeys() {
+  const dpr = window.devicePixelRatio || 1, W = cv.clientWidth, H = cv.clientHeight;
+  if (cv.width !== Math.round(W * dpr)) { cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
+  cx.setTransform(dpr, 0, 0, dpr, 0, 0); cx.clearRect(0, 0, W, H);
+  const ww = W / KB.wn;
+  for (const k of KB.wh) { cx.fillStyle = keys[k.k] ? '#3ee0ff' : '#dfe3ee'; cx.fillRect(k.x * ww + 0.5, 0, ww - 1, H); }
+  for (const k of KB.bl) { cx.fillStyle = keys[k.k] ? '#8b7bff' : '#10131b'; cx.fillRect(k.x * ww - ww * 0.3, 0, ww * 0.6, H * 0.6); }
+}
+let prevN = 0, prevMs = performance.now(), nps = 0;
+function onStats(e) {
+  const s = e.data;
+  if (s.fault !== undefined) { health('Audio engine recovered from an error: ' + s.fault, true); return; }
+  if (s.sfFail !== undefined) { const it = sfList.find(x => x.id === s.sfFail); if (it) { it.state = 'error'; it.info = s.msg; renderSF(); } return; }
+  lastStatAt = performance.now();
+  keys = s.keys; lastT = s.t;
+  const now = performance.now(), dt = now - prevMs;
+  if (dt > 250) { nps = Math.max(0, (s.notes - prevN) / (dt / 1000)); prevN = s.notes; prevMs = now; $('sNps').textContent = Math.round(nps).toLocaleString(); }
+  $('sLoad').textContent = Math.round(s.load * 100) + '%' + (s.scale < 0.98 ? ' (limiting)' : '');
+  $('sVox').textContent = s.active; $('sPeak').textContent = s.peak; $('sDrop').textContent = s.dropped;
+  if (!dragging && dur > 0) { $('tNow').textContent = fmt(s.t); $('seek').value = Math.min(1000, s.t / dur * 1000); }
+  if (s.ended) { playing = false; setPlayLabel(); }
+  drawKeys();
+}
+drawKeys(); window.addEventListener('resize', drawKeys);
+
+/* ---------- file inputs ---------- */
+function bindDrop(zone, input, fn) {
+  zone.onclick = () => input.click();
+  input.onchange = () => { for (const f of input.files) fn(f); input.value = ''; };
+  zone.ondragover = e => { e.preventDefault(); zone.classList.add('over'); };
+  zone.ondragleave = () => zone.classList.remove('over');
+}
+const route = f => { const n = f.name.toLowerCase(); if (n.endsWith('.sf2')) addSF(f, f.name); else if (n.endsWith('.mid') || n.endsWith('.midi')) loadMidi(f, f.name); else if (/\.(mp4|m4v|mov|webm|mkv)$/.test(n) || (f.type || '').indexOf('video/') === 0) scanVideo(f); };
+bindDrop($('sfDrop'), $('sfFile'), f => addSF(f, f.name));
+bindDrop($('midDrop'), $('midFile'), f => loadMidi(f, f.name));
+window.addEventListener('dragover', e => e.preventDefault());
+window.addEventListener('drop', e => { e.preventDefault(); $('sfDrop').classList.remove('over'); $('midDrop').classList.remove('over'); for (const f of e.dataTransfer.files) route(f); });
+$('sfUrlBtn').onclick = async () => {
+  const u = $('sfUrl').value.trim(); if (!u) return;
+  try { const r = await fetch(u); if (!r.ok) throw new Error('HTTP ' + r.status); const b = await r.blob(); addSF(b, decodeURIComponent(u.split('/').pop().split('?')[0]) || 'soundfont.sf2'); }
+  catch (err) { alert('Could not load: ' + err.message); }
+};
+
+/* ---------- Web MIDI input ---------- */
+$('btnMidiIn').onclick = async () => {
+  if (!navigator.requestMIDIAccess) { alert('Web MIDI is not supported in this browser.'); return; }
+  try {
+    const acc = await navigator.requestMIDIAccess(); const e = await ensureEngine(); await e.ctx.resume();
+    const hook = () => { for (const inp of acc.inputs.values()) inp.onmidimessage = ev => { const d = ev.data; if (d.length >= 2 && d[0] < 0xF0) engine.node.port.postMessage({ t: 'midi', m: d[0] | (d[1] << 8) | ((d[2] || 0) << 16) }); }; $('midiInSel').style.display = ''; $('midiInSel').innerHTML = '<option>' + [...acc.inputs.values()].map(i => i.name).join(', ') + '</option>'; };
+    hook(); acc.onstatechange = hook; $('btnMidiIn').disabled = true;
+  } catch (err) { alert('MIDI access denied: ' + err.message); }
+};
+
+/* ---------- engine restart ---------- */
+$('btnApply').onclick = async () => {
+  eng.sr = $('optSR').value; eng.lat = $('optLat').value; saveCfg();
+  restarting = true;
+  try { await restartEngine(); } catch (err) { health('Restart failed: ' + err.message, true); }
+  restarting = false;
+};
+
+/* ---------- WAV export ---------- */
+function saveWav(blob, part) {
+  const name = song.name.replace(/\.[^.]+$/, '') + (part ? '-part' + part : '') + '.wav';
+  const url = URL.createObjectURL(blob);
+  const box = document.createElement('div'); box.className = 'dlbox';
+  const a = document.createElement('a'); a.href = url; a.download = name; a.className = 'dl'; a.textContent = 'Download ' + name;
+  const inp = document.createElement('input'); inp.type = 'text'; inp.readOnly = true; inp.value = url; inp.onfocus = () => inp.select();
+  const mk = (t, f) => { const b = document.createElement('button'); b.className = 'sm'; b.textContent = t; b.onclick = f; return b; };
+  const copy = mk('Copy URL', async () => {
+    try { await navigator.clipboard.writeText(url); copy.textContent = 'Copied'; }
+    catch (e) { inp.focus(); inp.select(); try { document.execCommand('copy'); copy.textContent = 'Copied'; } catch (x) { copy.textContent = 'Select & copy'; } }
+    setTimeout(() => { copy.textContent = 'Copy URL'; }, 2000);
+  });
+  box.append(a, document.createElement('br'), inp, copy, mk('Open', () => { window.open(url, '_blank'); }));
+  try {
+    const f = new File([blob], name, { type: 'audio/wav' });
+    if (navigator.canShare && navigator.canShare({ files: [f] })) box.append(mk('Share / Save to Files', () => { navigator.share({ files: [f], title: name }).catch(() => {}); }));
+  } catch (e) {}
+  try { a.click(); } catch (e) {}
+  return box;
+}
+let exw = null;
+$('btnExport').onclick = () => {
+  if (!song) { $('exInfo').textContent = 'Load a MIDI file first.'; return; }
+  const sfs = sfList.filter(s => s.state === 'ready').map(s => s.blob);
+  if (!sfs.length) { $('exInfo').textContent = 'Load a SoundFont first.'; return; }
+  if (exw) exw.terminate();
+  exw = new Worker(URLS.exporter);
+  $('btnExport').disabled = true; $('btnCancel').disabled = false; $('exProg').style.width = '0%'; $('exInfo').textContent = 'Starting…'; $('exLinks').innerHTML = '';
+  const t0 = performance.now(); let partN = 0;
+  exw.onerror = () => { $('exInfo').textContent = 'Export crashed (probably out of memory) - try 16-bit or a lower sample rate.'; fin(); };
+  exw.onmessage = e => {
+    const m = e.data;
+    if (m.type === 'stage') $('exInfo').textContent = m.s;
+    else if (m.type === 'part') $('exLinks').appendChild(saveWav(m.blob, ++partN));
+    else if (m.type === 'prog') { $('exProg').style.width = Math.min(100, m.t / Math.max(0.001, m.dur) * 100).toFixed(1) + '%'; $('exInfo').textContent = fmt(m.t) + ' / ' + fmt(m.dur) + ' · ' + m.active + ' voices'; }
+    else if (m.type === 'done') {
+      $('exLinks').appendChild(saveWav(m.blob, partN > 0 ? partN + 1 : 0));
+      $('exInfo').textContent = fmt(m.seconds) + ' rendered in ' + ((performance.now() - t0) / 1000).toFixed(1) + ' s' + (partN ? ' (split into ' + (partN + 1) + ' files)' : '') + (m.faults ? ', ' + m.faults + ' engine errors recovered' : '');
+      $('exProg').style.width = '100%'; fin();
+    } else if (m.type === 'err') { $('exInfo').textContent = 'Error: ' + m.msg; fin(); }
+    else if (m.type === 'cancelled') { $('exInfo').textContent = 'Cancelled.'; fin(); }
+  };
+  exw.postMessage({
+    sr: +$('exSR').value, bits: +$('exFmt').value, maxVoices: Math.max(64, +$('exVox').value || 20000),
+    cfg, sfs, midi: song.blob, speed: +$('speed').value || 1,
+    lag: { enabled: $('lagEnable').checked, regions: lagRegions }
+  });
+};
+function fin() { $('btnExport').disabled = false; $('btnCancel').disabled = true; if (exw) { exw.terminate(); exw = null; } }
+$('btnCancel').onclick = () => { if (exw) exw.postMessage({ type: 'cancel' }); };
+$('btnPanic').onclick = () => { if (engine) engine.node.port.postMessage({ t: 'panic' }); };
+window.addEventListener('error', e => health('Error: ' + (e.message || 'unknown'), true));
+window.addEventListener('unhandledrejection', e => health('Error: ' + ((e.reason && e.reason.message) || e.reason), true));
+})();
+</script>
+</body>
+</html>
